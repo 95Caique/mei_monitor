@@ -21,7 +21,7 @@ class User(AbstractUser):
         default="FREE"
     )
 
-    ativo = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     lgpd_consentimento = models.BooleanField(
         default=False,
         help_text="Usuário aceitou os termos LGPD"

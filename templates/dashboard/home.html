@@ -42,8 +42,8 @@
             {% if alerts %}
             <ul class="list-group list-group-flush">
                 {% for a in alerts %}
-                <li class="list-group-item"><strong>[{{ a.level }}]</strong> {{ a.message }} <small class="text-muted">({{
-                    a.created_at }})</small></li>
+                <li class="list-group-item"><strong>[{{ a.level }}]</strong> {{ a.message }} <small class="text-muted">
+                    ({{ a.created_at }})</small></li>
                 {% endfor %}
             </ul>
             {% else %}

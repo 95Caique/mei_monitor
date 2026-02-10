@@ -1,30 +1,33 @@
 from django import forms
-from .models import User
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
+from monitor.models import Empresa
 
 
-class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
+class RegisterForm(UserCreationForm):
+    cnpj = forms.CharField(max_length=14, required=True)
+    razao_social = forms.CharField(max_length=255, required=True)
 
     class Meta:
-        model = User
-        fields = ['username', 'cnpj', 'ativo', 'password', 'lgpd_consentimento']
+        model = get_user_model()
+        fields = ("username", "email")
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        cnpj = self.cleaned_data.get("cnpj")
+        razao_social = self.cleaned_data.get("razao_social")
+
+        Empresa.objects.create(
+            user=user,
+            cnpj=cnpj,
+            razao_social=razao_social,
+            cidade="-",
+            estado="-",
+        )
+        return user
 
 
-        def save(self, commit=True):
-            user = super().save(commit=False)
-            user.set_password(self.cleaned_data['password'])
-            if commit:
-                user.save()
-            return user
-
-class UserCreationFormCustom(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ("email",)
-
-class LoginForm(AuthenticationForm):
+class LoginForm(forms.Form):
+    # kept simple; view uses AuthenticationForm by default
     pass
-

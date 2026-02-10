@@ -1,20 +1,80 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>MEI Monitor</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>MEI Monitor</h1>
-<p>Bem-vindo, {{ request.user.email }}</p>
+{% block title %}Dashboard - MEI Monitor{% endblock %}
 
-<hr>
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% if empresa %}
+        <div class="card p-3 mb-3 card-mei">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">{{ empresa.razao_social }}</h4>
+                    <small class="text-muted">CNPJ {{ empresa.cnpj }}</small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">{{ empresa.tipo }}</span>
+                    {% if not empresa.ativa %}<span class="badge bg-secondary">Inativa</span>{% endif %}
+                </div>
+            </div>
+            <div class="mt-3">
+                <p>Status: <strong>{{ empresa.status }}</strong></p>
+                <p>Última verificação: <small class="text-muted">{{ empresa.last_checked }}</small></p>
+            </div>
+        </div>
 
-<ul>
-    <li><a href="#">Configurar MEI</a></li>
-    <li><a href="#">Conectar Telegram</a></li>
-    <li><a href="#">Ver Faturamento</a></li>
-</ul>
+        <div class="card p-3 mb-3">
+            <h5>Últimas Notas</h5>
+            {% if empresa.invoices.exists %}
+            <ul class="list-group list-group-flush">
+                {% for inv in empresa.invoices.all|slice:":10" %}
+                <li class="list-group-item">{{ inv.invoice_id }} — R$ {{ inv.total }} — {{ inv.status }} <small
+                        class="text-muted">({{ inv.created_at }})</small></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Sem notas lançadas.</p>
+            {% endif %}
+        </div>
 
-</body>
-</html>
+        <div class="card p-3 mb-3">
+            <h5>Alertas recentes</h5>
+            {% if alerts %}
+            <ul class="list-group list-group-flush">
+                {% for a in alerts %}
+                <li class="list-group-item"><strong>[{{ a.level }}]</strong> {{ a.message }} <small class="text-muted">({{
+                    a.created_at }})</small></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Sem alertas recentes.</p>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <div class="card p-3 card-mei">
+            <h4>Cadastre seu MEI</h4>
+            <p>Você ainda não tem um MEI cadastrado. Preencha o formulário abaixo para começar.</p>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Criar MEI</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 mb-3 card-mei">
+            <h5>Ações rápidas</h5>
+            <a class="btn btn-outline-primary w-100 mb-2" href="{% url 'create_invoice' %}">Criar Nota</a>
+            <a class="btn btn-outline-secondary w-100 mb-2" href="/telegram/profile/">Configurar Telegram</a>
+        </div>
+
+        <div class="card p-3">
+            <h6>Notificações</h6>
+            <p class="text-muted">As notificações são enviadas automaticamente quando há movimentações nas notas.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,12 +1,30 @@
 {% extends "base.html" %}
 
+{% block title %}Entrar - MEI Monitor{% endblock %}
+
 {% block content %}
-<h2>Entrar</h2>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-
-    <button type="submit">Entrar</button>
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4 card-mei">
+            <h3 class="card-title mb-3">Entrar</h3>
+            <form method="post" action="">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="mb-3">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {{ form.username.errors }}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                    {{ form.password.errors }}
+                </div>
+                <button type="submit" class="btn btn-primary">Entrar</button>
+            </form>
+            <hr>
+            <p class="small">Não tem conta? Peça ao administrador criar (ou registre-se se permitido).</p>
+        </div>
+    </div>
+</div>
 {% endblock %}

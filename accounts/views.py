@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
 
 
 from .forms import RegisterForm
@@ -15,10 +15,10 @@ def register(request):
             login(request, user)
             return redirect('dashboard')
     else:
-        form = RegisterForm(),
-
+        form = RegisterForm()
 
     return render(request, 'accounts/register.html', {'form': form})
+
 
 def login_view(request):
     if request.method == "POST":

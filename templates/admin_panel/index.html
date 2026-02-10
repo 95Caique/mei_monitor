@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Admin Panel</h1>
+<ul>
+    <li><a href="{% url 'adminpanel:users_list' %}">Listar MEIs</a></li>
+    <li><a href="{% url 'adminpanel:user_create' %}">Criar MEI</a></li>
+</ul>
+{% endblock %}

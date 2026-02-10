@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>MEIs</h1>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Usuário</th>
+        <th>Empresa (CNPJ)</th>
+        <th>Ativa</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in users_with_empresas %}
+    <tr>
+        <td>{{ item.user.username }}</td>
+        <td>{% if item.empresa %}{{ item.empresa.razao_social }} ({{ item.empresa.cnpj }}){% else %}-{% endif %}</td>
+        <td>{{ item.user.is_active }}</td>
+        <td>
+            <a href="{% url 'adminpanel:user_edit' item.user.id %}">Editar</a> |
+            <a href="{% url 'adminpanel:user_toggle' item.user.id %}">Ativar/Desativar</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

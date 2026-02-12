@@ -1,106 +1,165 @@
 {% extends "base.html" %}
+{% load static labels %}
 
 {% block title %}Dashboard - MEI Monitor{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        {% if empresa %}
-        <div class="card p-3 mb-3 card-mei">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="mb-0">{{ empresa.razao_social }}</h4>
-                    <small class="text-muted">CNPJ {{ empresa.cnpj }}</small>
-                </div>
-                <div class="text-end">
-                    <span class="badge bg-success">{{ empresa.tipo }}</span>
-                    {% if not empresa.ativa %}<span class="badge bg-secondary">Inativa</span>{% endif %}
-                </div>
+<div class="dash-container">
+
+  <div class="balance-hero">
+    <p class="label">Valor Emitido</p>
+    <div class="d-flex align-items-center">
+      <span class="amount" id="balanceAmount">R$ {{ total_invoices_sum|floatformat:2 }}</span>
+      <button class="toggle-eye" onclick="toggleBalance()" id="eyeBtn" aria-label="Mostrar/ocultar saldo">👁</button>
+    </div>
+    <div class="meta">
+      <span>{{ empresa.razao_social }}</span>
+      <span>CNPJ {{ empresa.cnpj }}</span>
+    </div>
+  </div>
+
+  <!-- AÇÕES RÁPIDAS -->
+  <div class="quick-actions anim-1">
+    <a class="quick-action-btn" href="{% url 'create_invoice' %}">
+      <div class="quick-action-icon">📄</div>
+      <span class="quick-action-label">Criar Nota</span>
+    </a>
+    <a class="quick-action-btn" href="/telegram/profile/">
+      <div class="quick-action-icon">💬</div>
+      <span class="quick-action-label">Telegram</span>
+    </a>
+    <a class="quick-action-btn" href="{% url 'reports' %}">
+      <div class="quick-action-icon">📊</div>
+      <span class="quick-action-label">Relatórios</span>
+    </a>
+    <a class="quick-action-btn" href="#">
+      <div class="quick-action-icon">⚙️</div>
+      <span class="quick-action-label">Config</span>
+    </a>
+  </div>
+
+  <!-- CARDS ESTATÍSTICAS -->
+  <div class="stat-grid anim-2">
+    <div class="glass-card stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Total Faturado</span>
+        <span class="stat-icon green">📈</span>
+      </div>
+      <div class="stat-value">R$ {{ total_invoices_sum|floatformat:2 }}</div>
+      <div class="stat-change up">Este período</div>
+    </div>
+    <div class="glass-card stat-card expense">
+      <div class="stat-header">
+        <span class="stat-label">Notas Emitidas</span>
+        <span class="stat-icon red">📋</span>
+      </div>
+      <div class="stat-value">{{ empresa.invoices.count }}</div>
+      <div class="stat-change">Total de notas</div>
+    </div>
+    <div class="glass-card stat-card invest">
+      <div class="stat-header">
+        <span class="stat-label">Status MEI</span>
+        <span class="stat-icon gold">✅</span>
+      </div>
+      <div class="stat-value">{{ empresa.status }}</div>
+      <div class="stat-change">{{ empresa.tipo }}</div>
+    </div>
+  </div>
+
+  <!-- GRID PRINCIPAL -->
+  <div class="dash-grid">
+    <div>
+      <!-- ÚLTIMAS NOTAS -->
+      <div class="glass-card p-4 mb-3 anim-2">
+        <div class="section-header">
+          <h5>Últimas Notas</h5>
+          <a href="#">Ver todas</a>
+        </div>
+        {% if empresa.invoices.exists %}
+          {% for inv in empresa.invoices.all|slice:":10" %}
+          <div class="tx-item">
+            <div class="tx-icon-wrap">📄</div>
+            <div class="tx-info">
+              <div class="tx-name">{{ inv.invoice_id }}</div>
+              <div class="tx-meta">{{ inv.status|status_pt }} · {{ inv.created_at|date:"d/m/Y H:i" }}</div>
             </div>
-            <div class="mt-3">
-                <p>Status: <strong>{{ empresa.status }}</strong></p>
-                <p>Última verificação: <small class="text-muted">{{ empresa.last_checked }}</small></p>
-            </div>
-        </div>
-
-        <div class="card p-3 mb-3">
-            <h5>Últimas Notas</h5>
-            {% if empresa.invoices.exists %}
-            <ul class="list-group list-group-flush">
-                {% for inv in empresa.invoices.all|slice:":10" %}
-                <li class="list-group-item">{{ inv.invoice_id }} — R$ {{ inv.total }} — {{ inv.status }} <small
-                        class="text-muted">({{ inv.created_at }})</small></li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p class="text-muted">Sem notas lançadas.</p>
-            {% endif %}
-        </div>
-
-        <div class="card p-3 mb-3">
-            <h5>Alertas recentes</h5>
-            {% if alerts_page and alerts_page.object_list %}
-            <ul class="list-group list-group-flush">
-                {% for a in alerts_page.object_list %}
-                <li class="list-group-item"><strong>[{{ a.level }}]</strong> {{ a.message }} <small class="text-muted">({{ a.created_at }})</small></li>
-                {% endfor %}
-            </ul>
-            <nav aria-label="Alert pagination" class="mt-3">
-                <ul class="pagination justify-content-center">
-                    {% if alerts_page.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ alerts_page.previous_page_number }}" aria-label="Previous">
-                            &laquo; Anterior
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
-                    {% endif %}
-
-                    {% for p in alerts_page.paginator.page_range %}
-                    <li class="page-item {% if p == alerts_page.number %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
-                    {% endfor %}
-
-                    {% if alerts_page.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ alerts_page.next_page_number }}" aria-label="Next">
-                            Próximo &raquo;
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled"><span class="page-link">Próximo &raquo;</span></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% else %}
-            <p class="text-muted">Sem alertas recentes.</p>
-            {% endif %}
-        </div>
-
+            <div class="tx-value positive">R$ {{ inv.total|currency_pt }}</div>
+          </div>
+          {% endfor %}
         {% else %}
-        <div class="card p-3 card-mei">
-            <h4>Cadastre seu MEI</h4>
-            <p>Você ainda não tem um MEI cadastrado. Preencha o formulário abaixo para começar.</p>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Criar MEI</button>
-            </form>
-        </div>
+          <p class="text-muted">Sem notas lançadas.</p>
         {% endif %}
+      </div>
+
+      <!-- ALERTAS -->
+      <div class="glass-card p-4 mb-3 anim-3">
+        <div class="section-header">
+          <h5>Alertas recentes</h5>
+        </div>
+        {% if alerts_page and alerts_page.object_list %}
+          <ul class="list-group list-group-flush">
+            {% for a in alerts_page.object_list %}
+            <li class="list-group-item alert-item">
+              <strong>[{{ a.level|level_pt }}]</strong> {{ a.message }}
+              <small class="text-muted">({{ a.created_at|date:"d/m/Y H:i" }})</small>
+            </li>
+            {% endfor %}
+          </ul>
+          <nav aria-label="Paginação" class="mt-3">
+            <ul class="pagination justify-content-center">
+              {% if alerts_page.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ alerts_page.previous_page_number }}">&laquo;</a></li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+              {% endif %}
+              {% for p in alerts_page.paginator.page_range %}
+              <li class="page-item {% if p == alerts_page.number %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+              {% endfor %}
+              {% if alerts_page.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ alerts_page.next_page_number }}">&raquo;</a></li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% else %}
+          <p class="text-muted">Sem alertas recentes.</p>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card p-3 mb-3 card-mei">
-            <h5>Ações rápidas</h5>
-            <a class="btn btn-outline-primary w-100 mb-2" href="{% url 'create_invoice' %}">Criar Nota</a>
-            <a class="btn btn-outline-secondary w-100 mb-2" href="/telegram/profile/">Configurar Telegram</a>
-        </div>
-
-        <div class="card p-3">
-            <h6>Notificações</h6>
-            <p class="text-muted">As notificações são enviadas automaticamente quando há movimentações nas notas.</p>
-        </div>
+    <!-- SIDEBAR -->
+    <div>
+      <div class="glass-card p-4 mb-3 card-mei-custom anim-2">
+        <h5 style="font-weight:700; margin-bottom:1rem;">MEI Info</h5>
+        <p><strong>{{ empresa.razao_social }}</strong></p>
+        <p class="text-muted" style="font-size:0.85rem;">CNPJ: {{ empresa.cnpj }}</p>
+        <p style="font-size:0.85rem;">
+          <span class="badge bg-success">{{ empresa.tipo }}</span>
+          {% if not empresa.ativa %}<span class="badge bg-secondary ms-1">Inativa</span>{% endif %}
+        </p>
+        <p class="text-muted" style="font-size:0.8rem; margin-top:0.75rem;">Última verificação: {{ empresa.last_checked }}</p>
+      </div>
+      <div class="glass-card p-4 mb-3 anim-3">
+        <h6 style="font-weight:700; margin-bottom:1rem;">Ações rápidas</h6>
+        <a class="btn btn-outline-brand w-100 mb-2" href="{% url 'create_invoice' %}">📄 Criar Nota</a>
+        <a class="btn btn-outline-brand w-100 mb-2" href="/telegram/profile/">💬 Configurar Telegram</a>
+        <a class="btn btn-outline-brand w-100 mb-2" href="{% url 'reports' %}">📊 Ver Relatórios</a>
+      </div>
+      <div class="glass-card p-4 anim-3">
+        <h6 style="font-weight:700; margin-bottom:0.75rem;">🔔 Notificações</h6>
+        <p class="text-muted" style="font-size:0.85rem;">As notificações são enviadas automaticamente quando há movimentações nas notas.</p>
+      </div>
     </div>
+  </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}"></script>
 {% endblock %}

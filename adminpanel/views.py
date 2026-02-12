@@ -19,11 +19,20 @@ def index(request):
 
 @superuser_required
 def users_list(request):
-    users = User.objects.filter(is_superuser=False).order_by('username')
+    q = request.GET.get('q', '').strip()
+    users = User.objects.filter(is_superuser=False)
+    if q:
+        users = users.filter(username__icontains=q) | users.filter(email__icontains=q)
+    users = users.order_by('username')
     # For each user, fetch their empresa if exists
     users_with_empresas = []
     for u in users:
         empresa = Empresa.objects.filter(user=u).first()
+        # if search by empresa fields, filter here
+        if q:
+            if empresa:
+                if q.lower() not in (empresa.razao_social or '').lower() and q not in (empresa.cnpj or '') and q.lower() not in (u.username or '').lower() and q.lower() not in (u.email or '').lower():
+                    continue
         users_with_empresas.append({'user': u, 'empresa': empresa})
     return render(request, 'admin_panel/users_list.html', {'users_with_empresas': users_with_empresas})
 

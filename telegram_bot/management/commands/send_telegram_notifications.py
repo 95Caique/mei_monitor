@@ -8,6 +8,12 @@ from telegram_bot.services import send_message
 
 logger = logging.getLogger(__name__)
 
+LEVEL_PT = {
+    'INFO': 'Info',
+    'WARNING': 'Atenção',
+    'CRITICAL': 'Crítico',
+}
+
 
 class Command(BaseCommand):
     help = "Send telegram notifications to enabled users (run by cron)"
@@ -28,7 +34,8 @@ class Command(BaseCommand):
                 continue
 
             for alert in pending_alerts:
-                text = f"[{alert.level}] {alert.message}"
+                level = LEVEL_PT.get(alert.level.upper(), alert.level)
+                text = f"[{level}] {alert.message}"
                 sent = send_message(token, profile.chat_id, text)
                 if sent:
                     alert.notified = True

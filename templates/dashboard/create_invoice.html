@@ -1,10 +1,125 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static labels %}
+
+{% block title %}Criar Nota Fiscal - MEI Monitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Criar Nota Fiscal</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Criar Nota</button>
-</form>
+<div class="invoice-page">
+
+  <!-- HERO com breadcrumb -->
+  <div class="invoice-hero">
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <span>›</span>
+        <span>Criar Nota Fiscal</span>
+      </div>
+      <h1>📄 Nova Nota Fiscal</h1>
+      <p class="hero-sub">Preencha os campos para emitir uma nova nota fiscal eletrônica.</p>
+    </div>
+  </div>
+
+  <!-- STEPPER visual -->
+  <div class="stepper">
+    <div class="step active" id="step1">
+      <div class="step-num">1</div>
+      <span class="step-text">Dados da Nota</span>
+    </div>
+<!--    <div class="step-line"></div>-->
+<!--    <div class="step" id="step2">-->
+<!--      <div class="step-num">2</div>-->
+<!--      <span class="step-text">Revisão</span>-->
+<!--    </div>-->
+<!--    <div class="step-line"></div>-->
+<!--    <div class="step" id="step3">-->
+<!--      <div class="step-num">3</div>-->
+<!--      <span class="step-text">Emitida ✓</span>-->
+<!--    </div>-->
+  </div>
+
+  <!-- GRID: Formulário + Preview lateral -->
+  <div class="form-grid">
+
+    <!-- FORMULÁRIO -->
+    <div class="form-card">
+      <div class="form-section-title">
+        <span>📝</span> Dados da Nota Fiscal
+      </div>
+
+      <form method="post" id="invoiceForm">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}<span class="req">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+            <p class="helptext">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <ul class="errorlist">
+              {% for error in field.errors %}
+              <li>⚠ {{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+        <div class="errorlist" style="margin-bottom:1rem;">
+          {% for error in form.non_field_errors %}
+          <p>⚠ {{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit">
+            <span>📄</span> Emitir Nota Fiscal
+          </button>
+    <!--          <button type="button" class="btn-draft" onclick="alert('Rascunho salvo!')">-->
+    <!--            <span>💾</span> Salvar Rascunho-->
+    <!--          </button>-->
+          <a href="{% url 'dashboard' %}" class="btn-back">← Voltar</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- PREVIEW SIDEBAR -->
+    <div>
+      <div class="preview-card">
+        <h3><span>👁</span> Preview da Nota</h3>
+        <div id="previewContent">
+          <div class="preview-empty">
+            <span class="icon">📋</span>
+            Preencha o formulário para<br>visualizar a nota aqui.
+          </div>
+        </div>
+      </div>
+
+<!--      <div class="tips-card">-->
+<!--        <h4>💡 Dicas</h4>-->
+<!--        <ul>-->
+<!--          <li>Confira o CNPJ do tomador antes de emitir</li>-->
+<!--          <li>A descrição do serviço deve ser detalhada</li>-->
+<!--          <li>Notas emitidas não podem ser editadas</li>-->
+<!--          <li>Rascunhos ficam salvos por 7 dias</li>-->
+<!--        </ul>-->
+<!--      </div>-->
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/create_invoice.js' %}"></script>
 {% endblock %}

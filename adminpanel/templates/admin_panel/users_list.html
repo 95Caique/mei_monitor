@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Panel — Usuários{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Usuários</h2>
+  <a class="btn btn-primary" href="{% url 'adminpanel:user_create' %}">Criar usuário</a>
+</div>
+
+<div class="card card-mei p-3">
+  <div class="mb-3 d-flex justify-content-between">
+    <div>
+      <form class="d-flex" method="get">
+        <input name="q" class="form-control form-control-sm me-2" placeholder="Buscar por usuário, empresa ou CNPJ" value="{{ request.GET.q }}" />
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Buscar</button>
+      </form>
+    </div>
+    <div class="text-end text-muted small">Total: {{ users_with_empresas|length }}</div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Usuário</th>
+          <th>Empresa (CNPJ)</th>
+          <th class="text-center">Ativo</th>
+          <th class="text-end">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in users_with_empresas %}
+        {% with user=row.user empresa=row.empresa %}
+        <tr>
+          <td>
+            <div class="fw-bold">{{ user.username }}</div>
+            <div class="small text-muted">{{ user.email }}</div>
+          </td>
+          <td>
+            {% if empresa %}
+            <div>{{ empresa.razao_social }}</div>
+            <div class="small text-muted">{{ empresa.cnpj }}</div>
+            {% else %}
+            <span class="text-muted">— sem empresa —</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if user.is_active %}
+            <span class="badge bg-success">Ativo</span>
+            {% else %}
+            <span class="badge bg-secondary">Inativo</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'adminpanel:user_edit' user.id %}">Editar</a>
+            <a class="btn btn-sm btn-outline-warning" href="{% url 'adminpanel:user_toggle' user.id %}">
+              {% if user.is_active %}Desativar{% else %}Ativar{% endif %}
+            </a>
+          </td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

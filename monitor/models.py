@@ -70,6 +70,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=20, choices=(('ISSUED','ISSUED'),('CANCELLED','CANCELLED'),('DRAFT','DRAFT')), default='ISSUED')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_remote = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         unique_together = ('empresa', 'invoice_id')

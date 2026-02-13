@@ -105,15 +105,21 @@ class Command(BaseCommand):
                         local.save()
                         self.stdout.write(f' - updated local invoice {inv_id}')
                 else:
-                    Invoice.objects.create(empresa=empresa, invoice_id=inv_id, total=remote_inv['total'], status=remote_inv['status'])
+                    # mark invoices created from remote as is_remote=True so local user-created invoices are preserved
+                    Invoice.objects.create(empresa=empresa, invoice_id=inv_id, total=remote_inv['total'], status=remote_inv['status'], is_remote=True)
                     self.stdout.write(f' - created local invoice {inv_id}')
 
             local_ids = set(local_invoices.keys())
             remote_ids = set(remote_map.keys())
             to_delete = local_ids - remote_ids
             for inv_id in to_delete:
-                local_invoices[inv_id].delete()
-                self.stdout.write(f' - deleted local invoice {inv_id}')
+                local = local_invoices.get(inv_id)
+                # only delete invoices that originated from the remote source
+                if local and getattr(local, 'is_remote', False):
+                    local.delete()
+                    self.stdout.write(f' - deleted remote invoice {inv_id}')
+                else:
+                    self.stdout.write(f' - keeping local invoice {inv_id} (not remote)')
 
             empresa.last_checked = timezone.now()
             empresa.save(update_fields=['last_checked'])

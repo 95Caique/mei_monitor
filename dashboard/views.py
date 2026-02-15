@@ -118,13 +118,59 @@ def reports(request):
     status_labels = [STATUS_PT.get(s.get('status','').upper(), s.get('status','') or 'UNKNOWN') for s in status_counts]
     status_data = [s.get('count',0) for s in status_counts]
 
-    daily = invoices_qs.annotate(day=TruncDay('created_at')).values('day').annotate(total=Sum('total'), count=Count('id')).order_by('day')
+    daily_qs = invoices_qs.annotate(day=TruncDay('created_at')).values('day').annotate(total=Sum('total'), count=Count('id')).order_by('day')
+    daily = []
+    for d in daily_qs:
+        day_val = d.get('day')
+        if hasattr(day_val, 'isoformat'):
+            d['day'] = day_val.isoformat()
+        # ensure total is float
+        try:
+            d['total'] = float(d.get('total') or 0)
+        except Exception:
+            d['total'] = 0
+        daily.append(d)
 
     invoices_list = list(invoices_qs.order_by('-created_at').values('invoice_id','total','status','created_at'))
     invoices_json = json.dumps(invoices_list, default=str)
 
     invoices_12 = empresa.invoices.filter(created_at__date__gte=(today - datetime.timedelta(days=365)))
-    monthly = invoices_12.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('total'), count=Count('id')).order_by('month')
+    monthly_qs = invoices_12.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('total'), count=Count('id')).order_by('month')
+    monthly_map = {}
+    for m in monthly_qs:
+        mv = m.get('month')
+        if hasattr(mv, 'strftime'):
+            key = mv.strftime('%Y-%m')
+        else:
+            key = str(mv)[:7]
+        try:
+            total_val = float(m.get('total') or 0)
+        except Exception:
+            total_val = 0.0
+        monthly_map[key] = {'total': total_val, 'count': m.get('count', 0)}
+
+    monthly = []
+    for i in range(11, -1, -1):
+        month_date = (today.replace(day=1) - datetime.timedelta(days=0)).replace(day=1) - datetime.timedelta(days=i*30)
+    monthly = []
+    year = today.year
+    month = today.month
+    months = []
+    for offset in range(11, -1, -1):
+        y = year
+        m = month - offset
+        while m <= 0:
+            m += 12
+            y -= 1
+        months.append((y, m))
+    for (y, m) in months:
+        key = f"{y:04d}-{m:02d}"
+        iso_month = f"{y:04d}-{m:02d}-01T00:00:00"
+        data = monthly_map.get(key, {'total': 0.0, 'count': 0})
+        monthly.append({'month': iso_month, 'total': float(data['total']), 'count': int(data.get('count', 0))})
+
+    daily_json = json.dumps(daily)
+    monthly_json = json.dumps(monthly)
 
     yearly = empresa.invoices.annotate(year=TruncYear('created_at')).values('year').annotate(total=Sum('total'), count=Count('id')).order_by('year')
 
@@ -135,6 +181,8 @@ def reports(request):
         'status_data': status_data,
         'daily': list(daily),
         'monthly': list(monthly),
+        'daily_json': daily_json,
+        'monthly_json': monthly_json,
         'yearly': list(yearly),
         'start_date': start_date,
         'end_date': end_date,

@@ -1,5 +1,4 @@
 (function(){
-  // expects a global element with id 'invoicesData' containing JSON
   const dataEl = document.getElementById('invoicesData');
   if (!dataEl) return;
   let invoices = [];
@@ -30,7 +29,6 @@
     return invoices.filter(inv => {
       if ((inv.invoice_id||'').toLowerCase().includes(q)) return true;
       if ((inv.total||'').toString().toLowerCase().includes(q)) return true;
-      // name not available; fallback to invoice_id match
       return false;
     });
   }
@@ -57,6 +55,5 @@
     });
   }
 
-  // initial render hidden
   if(panel) panel.style.display = 'none';
 })();

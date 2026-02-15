@@ -51,7 +51,6 @@
                     <table class="table table-sm">
                         <thead><tr><th>#</th><th>Data</th><th>ID</th><th>Valor</th></tr></thead>
                         <tbody id="invoicesList">
-                        <!-- rendered by JS -->
                         </tbody>
                     </table>
                 </div>
@@ -59,7 +58,6 @@
         </div>
     </div>
 
-    <!-- provide the invoices JSON for client-side search -->
     <script type="application/json" id="invoicesData">{{ invoices_json|safe }}</script>
 
     <div class="row mt-4">
@@ -111,7 +109,7 @@
                     {% for d in daily %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ d.day|date:"Y-m-d" }}</td>
+                        <td>{{ d.day|slice:":10" }}</td>
                         <td>{{ d.count }}</td>
                         <td>R$ {{ d.total|floatformat:2 }}</td>
                     </tr>
@@ -134,17 +132,59 @@
       new Chart(ctxStatus, {type:'pie', data:{labels: statusLabels, datasets:[{data: statusData, backgroundColor:['#0d6efd','#ffc107','#dc3545','#6c757d']} ]}, options:{plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:function(ctx){return ctx.label + ': ' + ctx.parsed + ' notas';}}}}}});
     }
 
-    const dailyRaw = {{ daily|safe }};
-    const dailyLabels = dailyRaw.map(d => new Date(d.day).toISOString().slice(0,10));
+    const dailyRaw = JSON.parse('{{ daily_json|escapejs }}');
+    const dailyLabels = dailyRaw.map(d => d.day.slice(0,10));
     const dailyData = dailyRaw.map(d => d.total || 0);
     const ctxDaily = document.getElementById('dailyChart');
-    if(ctxDaily){ new Chart(ctxDaily, {type:'line', data:{labels: dailyLabels, datasets:[{label:'Faturamento', data: dailyData, borderColor:'#0d6efd', backgroundColor:'rgba(13,110,253,0.2)'}]}, options:{scales:{y:{ticks:{callback: function(value){return 'R$ ' + value.toFixed(2);} }}}}}); }
+    if(ctxDaily){
+      if(dailyData.length === 0){
+        ctxDaily.parentElement.innerHTML = '<div class="p-3 text-muted">Sem dados para os últimos 30 dias.</div>';
+      } else {
+        new Chart(ctxDaily, {type:'line', data:{labels: dailyLabels, datasets:[{label:'Faturamento', data: dailyData, borderColor:'#0d6efd', backgroundColor:'rgba(13,110,253,0.2)'}]}, options:{scales:{y:{ticks:{callback: function(value){return 'R$ ' + value.toFixed(2);} }}}}});
+      }
+    }
 
-    const monthlyRaw = {{ monthly|safe }};
-    const monthlyLabels = monthlyRaw.map(m => new Date(m.month).toISOString().slice(0,7));
+    const monthlyRaw = JSON.parse('{{ monthly_json|escapejs }}');
+    // labels like "jan 2025" in pt-BR
+    const monthlyLabels = monthlyRaw.map(m => {
+        try {
+            return new Date(m.month).toLocaleString('pt-BR', {month:'short', year:'numeric'}).replace('.','');
+        } catch(e){
+            return (m.month||'').slice(0,7);
+        }
+    });
     const monthlyData = monthlyRaw.map(m => m.total || 0);
     const ctxMonthly = document.getElementById('monthlyChart');
-    if(ctxMonthly){ new Chart(ctxMonthly, {type:'bar', data:{labels: monthlyLabels, datasets:[{label:'Mensal', data: monthlyData, backgroundColor:'#198754'}]}, options:{scales:{y:{ticks:{callback: function(value){return 'R$ ' + value.toFixed(2);} }}}}}); }
+    if(ctxMonthly){
+      if(monthlyData.length === 0){
+        ctxMonthly.parentElement.innerHTML = '<div class="p-3 text-muted">Sem dados mensais para o período selecionado.</div>';
+      } else {
+        new Chart(ctxMonthly, {
+          type: 'line',
+          data: {
+            labels: monthlyLabels,
+            datasets: [{
+              label: 'Faturamento (mensal)',
+              data: monthlyData,
+              borderColor: '#198754',
+              backgroundColor: 'rgba(25,135,84,0.12)',
+              tension: 0.36,
+              fill: true,
+              pointRadius: 3,
+              pointBackgroundColor: '#198754'
+            }]
+          },
+          options: {
+            scales: {
+              y: { ticks: { callback: function(value){ return 'R$ ' + value.toFixed(2); } } }
+            },
+            plugins: {
+              tooltip: { callbacks: { label: function(ctx){ return 'R$ ' + Number(ctx.parsed.y).toFixed(2); } } }
+            }
+          }
+        });
+      }
+    }
 
     // Invoices panel functionality (uses actual fields from invoices_json)
     (function(){

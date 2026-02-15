@@ -47,6 +47,36 @@ def home(request):
             alerts_page = paginator.page(paginator.num_pages)
         alerts = alerts_page.object_list
 
+        try:
+            current = int(alerts_page.number)
+        except Exception:
+            current = 1
+        total = paginator.num_pages
+
+        def compact_pages(current, total, delta=2):
+            pages = []
+            if total <= (2 * delta + 5):
+                return list(range(1, total + 1))
+            pages.append(1)
+            left = current - delta
+            right = current + delta
+            if left > 2:
+                pages.append('...')
+            for i in range(max(2, left), min(total - 1, right) + 1):
+                pages.append(i)
+            if right < total - 1:
+                pages.append('...')
+            pages.append(total)
+            return pages
+
+        alerts_compact_pages = compact_pages(current, total)
+        # prepare full alerts JSON for modal (client-side pagination and filtering)
+        try:
+            alerts_list = list(all_alerts.order_by('-created_at').values('id','level','message','created_at'))
+            alerts_all_json = json.dumps(alerts_list, default=str)
+        except Exception:
+            alerts_all_json = '[]'
+
     total_sum = Decimal('0.00')
     if empresa:
         qs = empresa.invoices.filter(status__iexact='ISSUED')
@@ -71,7 +101,7 @@ def home(request):
         invoices_list = list(empresa.invoices.order_by('-created_at').values('invoice_id','total','status','created_at'))
         invoices_json = json.dumps(invoices_list, default=str)
 
-    return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "total_invoices_sum": total_sum, "invoices_json": invoices_json})
+    return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "alerts_compact_pages": alerts_compact_pages, "alerts_all_json": alerts_all_json, "total_invoices_sum": total_sum, "invoices_json": invoices_json})
 
 
 @login_required

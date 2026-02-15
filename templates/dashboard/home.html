@@ -13,7 +13,7 @@
   <div class="balance-hero">
     <p class="label">Valor Emitido</p>
     <div class="d-flex align-items-center">
-      <span class="amount" id="balanceAmount">R$ {{ total_invoices_sum|floatformat:2 }}</span>
+        <span class="amount" id="balanceAmount">R$ {{ total_invoices_sum|currency_pt }}</span>
       <button class="toggle-eye" onclick="toggleBalance()" id="eyeBtn" aria-label="Mostrar/ocultar saldo">👁</button>
     </div>
     <div class="meta">
@@ -49,7 +49,7 @@
         <span class="stat-label">Total Faturado</span>
         <span class="stat-icon green">📈</span>
       </div>
-      <div class="stat-value">R$ {{ total_invoices_sum|floatformat:2 }}</div>
+        <div class="stat-value">R$ {{ total_invoices_sum|currency_pt }}</div>
       <div class="stat-change up">Este período</div>
     </div>
     <div class="glass-card stat-card expense">
@@ -99,8 +99,18 @@
       <div class="glass-card p-4 mb-3 anim-3">
         <div class="section-header">
           <h5>Alertas recentes</h5>
+          <div>
+            <select id="alertsFilter" class="form-select form-select-sm d-inline-block me-2" style="width:auto;">
+              <option value="ALL">Todos</option>
+              <option value="INFO">Info</option>
+              <option value="WARNING">Atenção</option>
+              <option value="CRITICAL">Crítico</option>
+            </select>
+            <button id="openAlertsModalBtn" class="btn btn-sm btn-outline-secondary">Ver todos</button>
+          </div>
         </div>
         {% if alerts_page and alerts_page.object_list %}
+        <div class="alerts-list" style="max-height:320px; overflow:auto;">
           <ul class="list-group list-group-flush">
             {% for a in alerts_page.object_list %}
             <li class="list-group-item alert-item">
@@ -109,25 +119,30 @@
             </li>
             {% endfor %}
           </ul>
-          <nav aria-label="Paginação" class="mt-3">
-            <ul class="pagination justify-content-center">
-              {% if alerts_page.has_previous %}
+        </div>
+        <nav aria-label="Paginação" class="mt-3">
+          <ul class="pagination justify-content-center">
+            {% if alerts_page.has_previous %}
               <li class="page-item"><a class="page-link" href="?page={{ alerts_page.previous_page_number }}">&laquo;</a></li>
-              {% else %}
+            {% else %}
               <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-              {% endif %}
-              {% for p in alerts_page.paginator.page_range %}
-              <li class="page-item {% if p == alerts_page.number %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
-              {% endfor %}
-              {% if alerts_page.has_next %}
-              <li class="page-item"><a class="page-link" href="?page={{ alerts_page.next_page_number }}">&raquo;</a></li>
+            {% endif %}
+            {% for p in alerts_compact_pages %}
+              {% if p == '...' %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
               {% else %}
-              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                <li class="page-item {% if p == alerts_page.number %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
               {% endif %}
-            </ul>
-          </nav>
+            {% endfor %}
+            {% if alerts_page.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ alerts_page.next_page_number }}">&raquo;</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+          </ul>
+        </nav>
         {% else %}
-          <p class="text-muted">Sem alertas recentes.</p>
+        <p class="text-muted">Sem alertas recentes.</p>
         {% endif %}
       </div>
     </div>
@@ -162,4 +177,45 @@
 
 {% block extra_js %}
 <script src="{% static 'js/home.js' %}"></script>
+
+<!-- Alerts Modal -->
+<div class="modal fade" id="alertsModal" tabindex="-1" aria-labelledby="alertsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alertsModalLabel">Todos os Alertas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="alertsModalClose"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <div>
+            <small class="text-muted">Filtrar por nível:</small>
+            <select id="alertsFilterModal" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
+              <option value="ALL">Todos</option>
+              <option value="INFO">Info</option>
+              <option value="WARNING">Atenção</option>
+              <option value="CRITICAL">Crítico</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>#</th><th>Data</th><th>Nível</th><th>Mensagem</th></tr></thead>
+            <tbody id="alertsModalList">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <nav aria-label="Paginação">
+          <ul id="alertsModalPagination" class="pagination mb-0"></ul>
+        </nav>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="alertsAllData">{{ alerts_all_json|safe }}</script>
+<script src="{% static 'js/alerts_modal.js' %}"></script>
 {% endblock %}

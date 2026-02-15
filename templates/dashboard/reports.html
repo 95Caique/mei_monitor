@@ -83,7 +83,7 @@
                     <tr>
                         <td>{{ y.year|date:"Y" }}</td>
                         <td>{{ y.count }}</td>
-                        <td>R$ {{ y.total|floatformat:2 }}</td>
+                        <td>R$ {{ y.total|currency_pt }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -111,7 +111,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ d.day|slice:":10" }}</td>
                         <td>{{ d.count }}</td>
-                        <td>R$ {{ d.total|floatformat:2 }}</td>
+                        <td>R$ {{ d.total|currency_pt }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>

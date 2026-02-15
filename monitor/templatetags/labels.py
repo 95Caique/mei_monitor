@@ -1,4 +1,5 @@
 from django import template
+from decimal import Decimal, InvalidOperation
 
 register = template.Library()
 
@@ -31,8 +32,21 @@ def level_pt(value):
 
 @register.filter
 def currency_pt(value):
+    """Format a number as pt-BR currency without the R$ prefix, e.g. 735167.03 -> 735.167,03
+    Robust to Decimal, float and string inputs.
+    """
     try:
-        # format number with comma decimal
-        return "{:,.2f}".format(float(value)).replace(',', 'X').replace('.', ',').replace('X', '.')
-    except Exception:
+        v = Decimal(value)
+    except (InvalidOperation, TypeError, ValueError):
         return value
+    try:
+        v = v.quantize(Decimal('0.01'))
+        sign = '-' if v < 0 else ''
+        if v < 0:
+            v = -v
+        int_part = int(v)
+        frac = int((v - Decimal(int_part)) * 100)
+        int_str = f"{int_part:,}".replace(',', '.')
+        return f"{sign}{int_str},{frac:02d}"
+    except Exception:
+        return str(value)

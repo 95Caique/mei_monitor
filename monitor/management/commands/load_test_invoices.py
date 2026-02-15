@@ -65,20 +65,17 @@ class Command(BaseCommand):
             inv = Invoice.objects.create(empresa=empresa, invoice_id=invoice_id, total=total, status=status)
             created += 1
 
-            # optionally update total
             if random.random() < update_prob:
                 new_total = round(total * random.uniform(0.5, 1.5), 2)
                 inv.total = new_total
                 inv.save()
                 updated += 1
 
-            # optionally cancel
             if random.random() < cancel_prob:
                 inv.status = 'CANCELLED'
                 inv.save()
                 cancelled += 1
 
-            # small progress output occasionally
             if (i + 1) % 50 == 0:
                 self.stdout.write(f'Created {i+1}/{count} invoices...')
 

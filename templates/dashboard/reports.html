@@ -37,6 +37,31 @@
         </div>
     </div>
 
+    <div class="row mt-3">
+        <div class="col-12 d-flex align-items-center gap-2">
+            <button id="toggleInvoicesBtn" class="btn btn-sm btn-outline-primary">Ver todas</button>
+            <input id="invoiceSearch" class="form-control form-control-sm w-50" placeholder="Pesquisar por ID ou valor" />
+        </div>
+    </div>
+    <div id="invoicesPanel" class="row mt-2 d-none">
+        <div class="col-12">
+            <div class="card p-3">
+                <h6>Notas (lista)</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>#</th><th>Data</th><th>ID</th><th>Valor</th></tr></thead>
+                        <tbody id="invoicesList">
+                        <!-- rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- provide the invoices JSON for client-side search -->
+    <script type="application/json" id="invoicesData">{{ invoices_json|safe }}</script>
+
     <div class="row mt-4">
         <div class="col-md-8">
             <div class="card p-3">
@@ -120,6 +145,63 @@
     const monthlyData = monthlyRaw.map(m => m.total || 0);
     const ctxMonthly = document.getElementById('monthlyChart');
     if(ctxMonthly){ new Chart(ctxMonthly, {type:'bar', data:{labels: monthlyLabels, datasets:[{label:'Mensal', data: monthlyData, backgroundColor:'#198754'}]}, options:{scales:{y:{ticks:{callback: function(value){return 'R$ ' + value.toFixed(2);} }}}}}); }
+
+    // Invoices panel functionality (uses actual fields from invoices_json)
+    (function(){
+        const toggleBtn = document.getElementById('toggleInvoicesBtn');
+        const panel = document.getElementById('invoicesPanel');
+        const searchInput = document.getElementById('invoiceSearch');
+        const dataEl = document.getElementById('invoicesData');
+        const listEl = document.getElementById('invoicesList');
+        let invoices = [];
+        try { invoices = JSON.parse(dataEl.textContent || '[]'); } catch(e){ invoices = []; }
+
+        function formatCurrency(v){
+            try { return new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Number(v)); } catch(e){ return 'R$ ' + v; }
+        }
+
+        function renderList(items){
+            if(!listEl) return;
+            if(!items.length){
+                listEl.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>';
+                return;
+            }
+            listEl.innerHTML = items.map((inv, i) => {
+                const dateStr = inv.created_at ? new Date(inv.created_at).toLocaleDateString('pt-BR') : '';
+                return `<tr><td>${i+1}</td><td>${dateStr}</td><td>${inv.invoice_id}</td><td>${formatCurrency(inv.total)}</td></tr>`;
+            }).join('\n');
+        }
+
+        function filterInvoices(q){
+            if(!q) return invoices;
+            q = q.toLowerCase();
+            return invoices.filter(inv => {
+                if((inv.invoice_id||'').toLowerCase().includes(q)) return true;
+                if((inv.status||'').toLowerCase().includes(q)) return true;
+                if((inv.total||'').toString().toLowerCase().includes(q)) return true;
+                return false;
+            });
+        }
+
+        toggleBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            const hidden = panel.classList.contains('d-none');
+            panel.classList.toggle('d-none', !hidden);
+            this.textContent = hidden ? 'Ocultar' : 'Ver todas';
+            if(hidden) renderList(invoices);
+        });
+
+        if(searchInput){
+            searchInput.addEventListener('input', function(){
+                const q = this.value.trim();
+                const filtered = filterInvoices(q);
+                renderList(filtered);
+            });
+        }
+
+        // initially keep hidden and pre-render empty
+        panel.classList.add('d-none');
+    })();
 </script>
 
 {% endblock %}

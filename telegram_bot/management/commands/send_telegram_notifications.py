@@ -9,20 +9,20 @@ from telegram_bot.services import send_message
 logger = logging.getLogger(__name__)
 
 LEVEL_PT = {
-    'INFO': 'Info',
+    'INFO': 'Informe',
     'WARNING': 'Atenção',
     'CRITICAL': 'Crítico',
 }
 
 
 class Command(BaseCommand):
-    help = "Send telegram notifications to enabled users (run by cron)"
+    help = "Enviar notificações do Telegram para usuários habilitados (executado pelo cron)"
 
     def handle(self, *args, **options):
         token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
         profiles = TelegramProfile.objects.filter(enabled=True).select_related("user")
         if not profiles.exists():
-            self.stdout.write("No enabled Telegram profiles found; nothing to do.")
+            self.stdout.write("Nenhum perfil do Telegram conectado, nada a fazer.")
             return
 
         for profile in profiles:
@@ -30,7 +30,7 @@ class Command(BaseCommand):
             empresas = Empresa.objects.filter(user=user, ativa=True)
             pending_alerts = Alert.objects.filter(empresa__in=empresas, notified=False).order_by('created_at')
             if not pending_alerts.exists():
-                self.stdout.write(f"No pending alerts for {user.username}")
+                self.stdout.write(f"Não há alertas pendentes para {user.username}")
                 continue
 
             for alert in pending_alerts:
@@ -40,6 +40,6 @@ class Command(BaseCommand):
                 if sent:
                     alert.notified = True
                     alert.save(update_fields=['notified'])
-                    self.stdout.write(f"Sent alert {alert.id} to {user.username}")
+                    self.stdout.write(f"Alerta enviado{alert.id} to {user.username}")
                 else:
-                    self.stdout.write(f"Failed to send alert {alert.id} to {user.username}")
+                    self.stdout.write(f"Falha ao enviar alerta {alert.id} to {user.username}")

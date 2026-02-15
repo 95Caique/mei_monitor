@@ -9,6 +9,7 @@ from django.http import HttpResponse
 import csv
 from django.utils.dateparse import parse_date
 from django.db.models import Q
+import json
 
 
 from monitor.models import Empresa
@@ -52,7 +53,6 @@ def home(request):
         agg = qs.aggregate(total_sum=Sum('total'))
         raw = agg.get('total_sum')
         if raw is None:
-            # fallback summing in Python
             try:
                 total_sum = sum((Decimal(inv.total) for inv in qs), Decimal('0.00'))
             except Exception:
@@ -66,7 +66,12 @@ def home(request):
                 except Exception:
                     total_sum = Decimal('0.00')
 
-    return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "total_invoices_sum": total_sum})
+    invoices_json = '[]'
+    if empresa:
+        invoices_list = list(empresa.invoices.order_by('-created_at').values('invoice_id','total','status','created_at'))
+        invoices_json = json.dumps(invoices_list, default=str)
+
+    return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "total_invoices_sum": total_sum, "invoices_json": invoices_json})
 
 
 @login_required
@@ -115,6 +120,9 @@ def reports(request):
 
     daily = invoices_qs.annotate(day=TruncDay('created_at')).values('day').annotate(total=Sum('total'), count=Count('id')).order_by('day')
 
+    invoices_list = list(invoices_qs.order_by('-created_at').values('invoice_id','total','status','created_at'))
+    invoices_json = json.dumps(invoices_list, default=str)
+
     invoices_12 = empresa.invoices.filter(created_at__date__gte=(today - datetime.timedelta(days=365)))
     monthly = invoices_12.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('total'), count=Count('id')).order_by('month')
 
@@ -130,6 +138,7 @@ def reports(request):
         'yearly': list(yearly),
         'start_date': start_date,
         'end_date': end_date,
+        'invoices_json': invoices_json,
     }
     return render(request, 'dashboard/reports.html', context)
 

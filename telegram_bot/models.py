@@ -9,7 +9,7 @@ class TelegramProfile(models.Model):
         related_name="telegram_profile",
     )
     chat_id = models.CharField(max_length=64, blank=True, null=True, help_text="Telegram chat id")
-    enabled = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=False, verbose_name="Ativo", help_text="Indica se as notificações do Telegram estão ativadas para este usuário.")
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

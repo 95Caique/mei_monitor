@@ -12,7 +12,7 @@ def edit_profile(request):
         form = TelegramProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('telegram_profile')
+            return redirect('telegram_bot:profile')
     else:
         form = TelegramProfileForm(instance=profile)
 

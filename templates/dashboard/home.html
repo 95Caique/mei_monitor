@@ -80,7 +80,7 @@
           <a href="#">Ver todas</a>
         </div>
         {% if empresa.invoices.exists %}
-          {% for inv in empresa.invoices.all|slice:":10" %}
+          {% for inv in empresa.invoices.all|dictsortreversed:"created_at"|slice:":10" %}
           <div class="tx-item">
             <div class="tx-icon-wrap">📄</div>
             <div class="tx-info">

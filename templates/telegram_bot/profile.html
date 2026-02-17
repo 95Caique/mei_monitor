@@ -1,10 +1,123 @@
+{# ===== telegram_config.html — Reutiliza CSS do create_invoice ===== #}
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Configurar Telegram - MEI Monitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Configurar Telegram</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Salvar</button>
-</form>
+<div class="invoice-page">
+
+  <!-- HERO -->
+  <div class="invoice-hero">
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <span>›</span>
+        <span>Configurar Telegram</span>
+      </div>
+      <h1>💬 Configurar Telegram</h1>
+      <p class="hero-sub">Conecte seu bot do Telegram para receber notificações em tempo real.</p>
+    </div>
+  </div>
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="step active">
+      <div class="step-num">1</div>
+      <span class="step-text">Configurar</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <span class="step-text">Conectado ✓</span>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="form-grid">
+
+    <!-- FORMULÁRIO -->
+    <div class="form-card">
+      <div class="form-section-title">
+        <span>🤖</span> Dados do Telegram
+      </div>
+
+      <form method="post" id="telegramForm">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}<span class="req">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+            <p class="helptext">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <ul class="errorlist">
+              {% for error in field.errors %}
+              <li>⚠ {{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+        <div class="errorlist" style="margin-bottom:1rem;">
+          {% for error in form.non_field_errors %}
+          <p>⚠ {{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit">
+            <span></span> Salvar Configuração
+          </button>
+          <a href="{% url 'dashboard' %}" class="btn-back">← Voltar</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SIDEBAR DICAS -->
+    <div>
+      <div class="preview-card">
+        <h3><span>📖</span> Como configurar</h3>
+        <div class="preview-line">
+          <span class="preview-label">1.</span>
+          <span class="preview-value">Abra o @BotFather no Telegram</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">2.</span>
+          <span class="preview-value">Crie um bot com /newbot</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">3.</span>
+          <span class="preview-value">Copie o token gerado</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">4.</span>
+          <span class="preview-value">Cole aqui e salve</span>
+        </div>
+      </div>
+
+      <div class="tips-card">
+        <h4>💡 Dicas</h4>
+        <ul>
+          <li>O Chat ID pode ser obtido enviando /start para o bot e acessando a API</li>
+          <li>Notificações serão enviadas automaticamente ao emitir notas</li>
+          <li>Você pode desativar a qualquer momento</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
 {% endblock %}

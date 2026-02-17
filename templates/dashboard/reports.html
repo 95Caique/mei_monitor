@@ -1,163 +1,239 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 {% load labels %}
+
 {% block title %}Relatórios - MEI Monitor{% endblock %}
 
-{% block content %}
-<div class="container">
-    <h2>Relatórios - {{ empresa.razao_social }} ({{ empresa.cnpj }})</h2>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reports.css' %}">
+{% endblock %}
 
-    <form class="row g-2 mt-3" method="get">
-        <div class="col-auto">
-            <label class="form-label">Início</label>
-            <input type="date" name="start" value="{{ start_date }}" class="form-control"/>
+{% block content %}
+<div class="reports-page">
+
+    <div class="reports-hero">
+        <div class="hero-content">
+            <div class="hero-breadcrumb">
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <span>›</span>
+                <span>Relatórios</span>
+            </div>
+            <h1>📊 Relatórios</h1>
+            <p class="hero-sub">Análise completa do faturamento e notas fiscais.</p>
+            <div class="company-badge">
+                <span>🏢</span>
+                {{ empresa.razao_social }} — {{ empresa.cnpj }}
+            </div>
         </div>
-        <div class="col-auto">
-            <label class="form-label">Fim</label>
-            <input type="date" name="end" value="{{ end_date }}" class="form-control"/>
+    </div>
+
+    <form class="filter-bar" method="get">
+        <div class="filter-group">
+            <label>📅 Data Início</label>
+            <input type="date" name="start" value="{{ start_date }}"/>
         </div>
-        <div class="col-auto align-self-end">
-            <button class="btn btn-primary">Filtrar</button>
-            <a class="btn btn-outline-secondary"
-               href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}">Exportar CSV</a>
+        <div class="filter-group">
+            <label>📅 Data Fim</label>
+            <input type="date" name="end" value="{{ end_date }}"/>
         </div>
+        <button type="submit" class="btn-filter">🔍 Filtrar</button>
+        <a class="btn-export"
+           href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}">
+            📥 Exportar CSV
+        </a>
     </form>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Notas por Status</h5>
-                <canvas id="statusChart"></canvas>
-            </div>
+    <div class="charts-grid" style="animation: fadeUp 0.5s ease-out 0.15s both;">
+        <div class="rp-card">
+            <h3><span>🥧</span> Notas por Status</h3>
+            <canvas id="statusChart"></canvas>
         </div>
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Faturamento - últimos 30 dias</h5>
-                <canvas id="dailyChart"></canvas>
-            </div>
-        </div>
+        <div class="rp-card">
+            <h3><span>📈</span> Faturamento — últimos 30 dias</h3>
+            <canvas id="dailyChart"></canvas>
+    </div>
     </div>
 
-    <div class="row mt-3">
-        <div class="col-12 d-flex align-items-center gap-2">
-            <button id="toggleInvoicesBtn" class="btn btn-sm btn-outline-primary">Ver todas</button>
-            <input id="invoiceSearch" class="form-control form-control-sm w-50" placeholder="Pesquisar por ID ou valor" />
-        </div>
-    </div>
-    <div id="invoicesPanel" class="row mt-2 d-none">
-        <div class="col-12">
-            <div class="card p-3">
-                <h6>Notas (lista)</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead><tr><th>#</th><th>Data</th><th>ID</th><th>Valor</th></tr></thead>
-                        <tbody id="invoicesList">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class="invoices-toggle">
+        <button id="toggleInvoicesBtn" class="btn-toggle">📋 Ver todas as notas</button>
+        <input id="invoiceSearch" class="search-input" placeholder="🔎 Pesquisar por ID ou valor..."/>
     </div>
 
-    <script type="application/json" id="invoicesData">{{ invoices_json|safe }}</script>
-
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <div class="card p-3">
-                <h5>Faturamento por mês (últimos 12 meses)</h5>
-                <canvas id="monthlyChart"></canvas>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3">
-                <h5>Resumo anual</h5>
-                <table class="table table-sm">
-                    <thead>
-                    <tr>
-                        <th>Ano</th>
-                        <th>Notas</th>
-                        <th>Total</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for y in yearly %}
-                    <tr>
-                        <td>{{ y.year|date:"Y" }}</td>
-                        <td>{{ y.count }}</td>
-                        <td>R$ {{ y.total|currency_pt }}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card p-3">
-                <h5>Detalhes das últimas movimentações</h5>
-                <table class="table table-striped">
+    <div id="invoicesPanel" style="display:none; animation: fadeUp 0.3s ease-out both;">
+        <div class="rp-card" style="margin-bottom: 1.25rem;">
+            <h3><span>📄</span> Notas Fiscais</h3>
+            <div style="overflow-x:auto;">
+                <table class="rp-table">
                     <thead>
                     <tr>
                         <th>#</th>
                         <th>Data</th>
-                        <th>Status</th>
+                        <th>ID</th>
                         <th>Valor</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    {% for d in daily %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ d.day|slice:":10" }}</td>
-                        <td>{{ d.count }}</td>
-                        <td>R$ {{ d.total|currency_pt }}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
+                    <tbody id="invoicesList"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-</div>
+    <script type="application/json" id="invoicesData">{{invoices_json|safe}}</script>
 
+    <div class="bottom-grid" style="animation: fadeUp 0.5s ease-out 0.3s both;">
+        <div class="rp-card">
+            <h3><span>📉</span> Faturamento por mês (últimos 12 meses)</h3>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+        <div class="rp-card summary-card">
+            <h3><span>📋</span> Resumo Anual</h3>
+            <table class="rp-table">
+                <thead>
+                <tr>
+                    <th>Ano</th>
+                    <th>Notas</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for y in yearly %}
+                <tr>
+                    <td><strong>{{ y.year|date:"Y" }}</strong></td>
+                    <td><span class="status-badge blue">{{ y.count }}</span></td>
+                    <td style="font-weight:700; color: var(--primary);">R$ {{ y.total|currency_pt }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="rp-card" style="margin-top: 1.25rem; animation: fadeUp 0.5s ease-out 0.4s both;">
+        <h3><span>🔄</span> Detalhes das últimas movimentações</h3>
+        <div style="overflow-x:auto;">
+            <table class="rp-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Data</th>
+                    <th>Qtd</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for d in daily %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ d.day|slice:":10" }}</td>
+                    <td><span class="status-badge green">{{ d.count }}</span></td>
+                    <td style="font-weight:700;">R$ {{ d.total|currency_pt }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    const COLORS = {
+      primary: '#1a9a5c',
+      primaryBg: 'rgba(26,154,92,0.12)',
+      blue: '#3b82f6',
+      blueBg: 'rgba(59,130,246,0.2)',
+      accent: '#e5a617',
+      danger: '#dc4a4a',
+      muted: '#7c8298',
+      border: '#e8eaf0'
+    };
+
+    const defaultOpts = {
+      responsive: true,
+      plugins: {
+        legend: { labels: { font: { family: "'Plus Jakarta Sans'", weight: 600, size: 12 }, padding: 16, usePointStyle: true } },
+        tooltip: {
+          backgroundColor: '#fff', titleColor: '#1a1d2e', bodyColor: '#1a1d2e',
+          borderColor: '#e8eaf0', borderWidth: 1, cornerRadius: 12,
+          titleFont: { family: "'Plus Jakarta Sans'", weight: 700 },
+          bodyFont: { family: "'Plus Jakarta Sans'" },
+          padding: 12, boxPadding: 6
+        }
+      }
+    };
+
+    // ===== PIE: Notas por Status =====
     const statusLabels = {{ status_labels|safe }};
     const statusData = {{ status_data|safe }};
-
     const ctxStatus = document.getElementById('statusChart');
-    if(ctxStatus){
-      new Chart(ctxStatus, {type:'pie', data:{labels: statusLabels, datasets:[{data: statusData, backgroundColor:['#0d6efd','#ffc107','#dc3545','#6c757d']} ]}, options:{plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:function(ctx){return ctx.label + ': ' + ctx.parsed + ' notas';}}}}}});
+    if (ctxStatus) {
+      new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: statusLabels,
+          datasets: [{
+            data: statusData,
+            backgroundColor: [COLORS.blue, COLORS.accent, COLORS.danger, COLORS.muted],
+            borderWidth: 0, hoverOffset: 8
+          }]
+        },
+        options: {
+          ...defaultOpts, cutout: '60%',
+          plugins: {
+            ...defaultOpts.plugins,
+            legend: { ...defaultOpts.plugins.legend, position: 'bottom' },
+            tooltip: {
+              ...defaultOpts.plugins.tooltip,
+              callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' notas' }
+            }
+          }
+        }
+      });
     }
 
     const dailyRaw = JSON.parse('{{ daily_json|escapejs }}');
-    const dailyLabels = dailyRaw.map(d => d.day.slice(0,10));
+    const dailyLabels = dailyRaw.map(d => d.day.slice(0, 10));
     const dailyData = dailyRaw.map(d => d.total || 0);
     const ctxDaily = document.getElementById('dailyChart');
-    if(ctxDaily){
-      if(dailyData.length === 0){
-        ctxDaily.parentElement.innerHTML = '<div class="p-3 text-muted">Sem dados para os últimos 30 dias.</div>';
+    if (ctxDaily) {
+      if (!dailyData.length) {
+        ctxDaily.parentElement.innerHTML = '<div class="empty-state"><span class="icon">📭</span>Sem dados para os últimos 30 dias.</div>';
       } else {
-        new Chart(ctxDaily, {type:'line', data:{labels: dailyLabels, datasets:[{label:'Faturamento', data: dailyData, borderColor:'#0d6efd', backgroundColor:'rgba(13,110,253,0.2)'}]}, options:{scales:{y:{ticks:{callback: function(value){return 'R$ ' + value.toFixed(2);} }}}}});
+        new Chart(ctxDaily, {
+          type: 'line',
+          data: {
+            labels: dailyLabels,
+            datasets: [{
+              label: 'Faturamento',
+              data: dailyData,
+              borderColor: COLORS.blue, backgroundColor: COLORS.blueBg,
+              tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: COLORS.blue, borderWidth: 2.5
+            }]
+          },
+          options: {
+            ...defaultOpts,
+            scales: {
+              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
+            }
+          }
+        });
       }
     }
 
     const monthlyRaw = JSON.parse('{{ monthly_json|escapejs }}');
-    // labels like "jan 2025" in pt-BR
     const monthlyLabels = monthlyRaw.map(m => {
-        try {
-            return new Date(m.month).toLocaleString('pt-BR', {month:'short', year:'numeric'}).replace('.','');
-        } catch(e){
-            return (m.month||'').slice(0,7);
-        }
+      try { return new Date(m.month).toLocaleString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', ''); }
+      catch(e) { return (m.month || '').slice(0, 7); }
     });
     const monthlyData = monthlyRaw.map(m => m.total || 0);
     const ctxMonthly = document.getElementById('monthlyChart');
-    if(ctxMonthly){
-      if(monthlyData.length === 0){
-        ctxMonthly.parentElement.innerHTML = '<div class="p-3 text-muted">Sem dados mensais para o período selecionado.</div>';
+    if (ctxMonthly) {
+      if (!monthlyData.length) {
+        ctxMonthly.parentElement.innerHTML = '<div class="empty-state"><span class="icon">📭</span>Sem dados mensais.</div>';
       } else {
         new Chart(ctxMonthly, {
           type: 'line',
@@ -166,82 +242,77 @@
             datasets: [{
               label: 'Faturamento (mensal)',
               data: monthlyData,
-              borderColor: '#198754',
-              backgroundColor: 'rgba(25,135,84,0.12)',
-              tension: 0.36,
-              fill: true,
-              pointRadius: 3,
-              pointBackgroundColor: '#198754'
+              borderColor: COLORS.primary, backgroundColor: COLORS.primaryBg,
+              tension: 0.36, fill: true, pointRadius: 4, pointBackgroundColor: COLORS.primary, borderWidth: 2.5
             }]
           },
           options: {
+            ...defaultOpts,
             scales: {
-              y: { ticks: { callback: function(value){ return 'R$ ' + value.toFixed(2); } } }
+              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
             },
             plugins: {
-              tooltip: { callbacks: { label: function(ctx){ return 'R$ ' + Number(ctx.parsed.y).toFixed(2); } } }
+              ...defaultOpts.plugins,
+              tooltip: {
+                ...defaultOpts.plugins.tooltip,
+                callbacks: { label: ctx => 'R$ ' + Number(ctx.parsed.y).toFixed(2) }
+              }
             }
           }
         });
       }
     }
 
-    // Invoices panel functionality (uses actual fields from invoices_json)
-    (function(){
-        const toggleBtn = document.getElementById('toggleInvoicesBtn');
-        const panel = document.getElementById('invoicesPanel');
-        const searchInput = document.getElementById('invoiceSearch');
-        const dataEl = document.getElementById('invoicesData');
-        const listEl = document.getElementById('invoicesList');
-        let invoices = [];
-        try { invoices = JSON.parse(dataEl.textContent || '[]'); } catch(e){ invoices = []; }
+    (function() {
+      const toggleBtn = document.getElementById('toggleInvoicesBtn');
+      const panel = document.getElementById('invoicesPanel');
+      const searchInput = document.getElementById('invoiceSearch');
+      const dataEl = document.getElementById('invoicesData');
+      const listEl = document.getElementById('invoicesList');
+      let invoices = [];
+      try { invoices = JSON.parse(dataEl.textContent || '[]'); } catch(e) { invoices = []; }
 
-        function formatCurrency(v){
-            try { return new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Number(v)); } catch(e){ return 'R$ ' + v; }
+      function fmt(v) {
+        try { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v)); }
+        catch(e) { return 'R$ ' + v; }
+      }
+
+      function render(items) {
+        if (!listEl) return;
+        if (!items.length) {
+          listEl.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.5rem;">Nenhuma nota encontrada.</td></tr>';
+          return;
         }
+        listEl.innerHTML = items.map((inv, i) => {
+          const dt = inv.created_at ? new Date(inv.created_at).toLocaleDateString('pt-BR') : '';
+          return '<tr><td>' + (i+1) + '</td><td>' + dt + '</td><td><strong>' + inv.invoice_id + '</strong></td><td style="font-weight:700;color:var(--primary);">' + fmt(inv.total) + '</td></tr>';
+        }).join('');
+      }
 
-        function renderList(items){
-            if(!listEl) return;
-            if(!items.length){
-                listEl.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>';
-                return;
-            }
-            listEl.innerHTML = items.map((inv, i) => {
-                const dateStr = inv.created_at ? new Date(inv.created_at).toLocaleDateString('pt-BR') : '';
-                return `<tr><td>${i+1}</td><td>${dateStr}</td><td>${inv.invoice_id}</td><td>${formatCurrency(inv.total)}</td></tr>`;
-            }).join('\n');
-        }
+      function filter(q) {
+        if (!q) return invoices;
+        q = q.toLowerCase();
+        return invoices.filter(inv =>
+          (inv.invoice_id || '').toLowerCase().includes(q) ||
+          (inv.status || '').toLowerCase().includes(q) ||
+          (inv.total || '').toString().includes(q)
+        );
+      }
 
-        function filterInvoices(q){
-            if(!q) return invoices;
-            q = q.toLowerCase();
-            return invoices.filter(inv => {
-                if((inv.invoice_id||'').toLowerCase().includes(q)) return true;
-                if((inv.status||'').toLowerCase().includes(q)) return true;
-                if((inv.total||'').toString().toLowerCase().includes(q)) return true;
-                return false;
-            });
-        }
+      toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const hidden = panel.style.display === 'none';
+        panel.style.display = hidden ? 'block' : 'none';
+        this.textContent = hidden ? '🙈 Ocultar notas' : '📋 Ver todas as notas';
+        if (hidden) render(invoices);
+      });
 
-        toggleBtn.addEventListener('click', function(e){
-            e.preventDefault();
-            const hidden = panel.classList.contains('d-none');
-            panel.classList.toggle('d-none', !hidden);
-            this.textContent = hidden ? 'Ocultar' : 'Ver todas';
-            if(hidden) renderList(invoices);
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          render(filter(this.value.trim()));
         });
-
-        if(searchInput){
-            searchInput.addEventListener('input', function(){
-                const q = this.value.trim();
-                const filtered = filterInvoices(q);
-                renderList(filtered);
-            });
-        }
-
-        // initially keep hidden and pre-render empty
-        panel.classList.add('d-none');
+      }
     })();
 </script>
-
 {% endblock %}

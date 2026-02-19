@@ -7,80 +7,87 @@
 <link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
 {% endblock %}
 
+
 {% block content %}
 <div class="invoice-page">
-
   <!-- HERO -->
   <div class="invoice-hero">
-    <div class="hero-content">
-      <div class="hero-breadcrumb">
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <span>›</span>
-        <a href="{% url 'adminpanel:users_list' %}">MEIs</a>
-        <span>›</span>
-        <span>Criar</span>
-      </div>
-      <h1>➕ Criar Novo MEI</h1>
+      <div class="hero-content">
+          <div class="hero-breadcrumb">
+              <a href="{% url 'dashboard' %}">Dashboard</a>
+              <span>›</span>
+              <a href="{% url 'adminpanel:users_list' %}">MEIs</a>
+              <span>Criar</span>
+          </div>
+          <h1>Criar Novo MEI</h1>
       <p class="hero-sub">Cadastre uma nova empresa MEI no sistema.</p>
     </div>
   </div>
 
-  <!-- GRID -->
-  <div class="form-grid">
-
-    <!-- FORMULÁRIO -->
+    <div class="mei-form-layout">
     <div class="form-card">
-      <div class="form-section-title">
-        <span>📝</span> Dados do MEI
-      </div>
-
-      <form method="post" style="margin-top:1.5rem;">
-        {% csrf_token %}
-
-        <div class="form-fields">
-          {{ form.as_p }}
+        <div class="form-section-title">
+            📝 Dados do MEI
         </div>
 
-        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-          <button type="submit" class="btn-submit">
-            <span>💾</span> Criar MEI
-          </button>
 
-          <a href="{% url 'adminpanel:users_list' %}" class="btn-back">
-            ← Cancelar
-          </a>
-        </div>
-      </form>
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-fields">
+                <div class="form-group">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {{ form.username.errors }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                    {{ form.email.errors }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                    {{ form.password.errors }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.cnpj.label_tag }}
+                    {{ form.cnpj }}
+                    {{ form.cnpj.errors }}
+                </div>
+
+                <div class="form-group full-width">
+                    {{ form.razao_social.label_tag }}
+                    {{ form.razao_social }}
+                    {{ form.razao_social.errors }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.plano.label_tag }}
+                    {{ form.plano }}
+                    {{ form.plano.errors }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.ativa.label_tag }}
+                    {{ form.ativa }}
+                    {{ form.ativa.errors }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    Criar MEI
+                </button>
+
+                <a href="{% url 'adminpanel:users_list' %}" class="btn-back">
+                    ← Cancelar
+                </a>
+            </div>
+        </form>
     </div>
-
-    <!-- SIDEBAR -->
-    <div>
-      <div class="preview-card">
-        <h3><span>🏢</span> Informações</h3>
-        <div class="preview-line">
-          <span class="preview-label">CNPJ</span>
-          <span class="preview-value">Deve ser único no sistema</span>
-        </div>
-        <div class="preview-line">
-          <span class="preview-label">Status</span>
-          <span class="preview-value">Defina se o MEI está ativo</span>
-        </div>
-        <div class="preview-line">
-          <span class="preview-label">Tipo</span>
-          <span class="preview-value">Classificação da empresa</span>
-        </div>
-      </div>
-
-      <div class="tips-card">
-        <h4>💡 Boas práticas</h4>
-        <ul>
-          <li>Revise os dados antes de salvar</li>
-          <li>Confirme se o CNPJ está correto</li>
-          <li>Evite duplicidade de empresas</li>
-        </ul>
-      </div>
-    </div>
-
-  </div>
 </div>
 {% endblock %}

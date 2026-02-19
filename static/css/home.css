@@ -112,3 +112,4 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .anim-1 { animation: slideUp 0.5s ease-out 0.1s both; }
 .anim-2 { animation: slideUp 0.5s ease-out 0.2s both; }
 .anim-3 { animation: slideUp 0.5s ease-out 0.3s both; }
+

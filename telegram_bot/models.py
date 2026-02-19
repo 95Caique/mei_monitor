@@ -8,6 +8,7 @@ class TelegramProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="telegram_profile",
     )
+    bot_token = models.CharField(max_length=256, blank=True, null=True, help_text="Token do bot (opcional). Se vazio, será usado o token global nas settings.")
     chat_id = models.CharField(max_length=64, blank=True, null=True, help_text="Telegram chat id")
     enabled = models.BooleanField(default=False, verbose_name="Ativo", help_text="Indica se as notificações do Telegram estão ativadas para este usuário.")
     criado_em = models.DateTimeField(auto_now_add=True)

@@ -1,18 +1,20 @@
-
 from pathlib import Path
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# carega as  variaveis do .env se tiver (python-dotenv)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(Path(__file__).resolve().parent.parent, '.env'))
+except Exception:
+    pass
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-utk*nq$u-dhd1qvxq-603=#9%!koso3w+he-5h5i)e^_oe#1k!'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-utk*nq$u-dhd1qvxq-603=#9%!koso3w+he-5h5i)e^_oe#1k!')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -122,8 +124,9 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Telegram bot token (set via environment variable in production)
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', None)
+if not TELEGRAM_BOT_TOKEN:
+    TELEGRAM_BOT_TOKEN = ''
 
 # django-crontab jobs: run 4 times a day (midnight, 06:00, 12:00, 18:00 UTC)
 CRONJOBS = [

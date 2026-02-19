@@ -8,8 +8,17 @@
 <link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
 {% endblock %}
 
+
 {% block content %}
 <div class="invoice-page">
+
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- HERO -->
   <div class="invoice-hero">
@@ -69,14 +78,6 @@
         </div>
         {% endfor %}
 
-        {% if form.non_field_errors %}
-        <div class="errorlist" style="margin-bottom:1rem;">
-          {% for error in form.non_field_errors %}
-          <p>⚠ {{ error }}</p>
-          {% endfor %}
-        </div>
-        {% endif %}
-
         <div class="form-actions">
           <button type="submit" class="btn-submit">
             <span></span> Salvar Configuração
@@ -111,7 +112,8 @@
       <div class="tips-card">
         <h4>💡 Dicas</h4>
         <ul>
-          <li>O Chat ID pode ser obtido enviando /start para o bot e acessando a API</li>
+          <li>O Chat ID pode ser obtido enviando /start para o bot e acessando a API (ex: https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates)</li>
+          <li>Você também pode usar o bot <a href="https://t.me/get_id_bot" target="_blank">@get_id_bot</a> para obter seu chat id</li>
           <li>Notificações serão enviadas automaticamente ao emitir notas</li>
           <li>Você pode desativar a qualquer momento</li>
         </ul>

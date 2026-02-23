@@ -100,12 +100,12 @@
         <div class="section-header">
           <h5>Alertas recentes</h5>
           <div>
-            <select id="alertsFilter" class="form-select form-select-sm d-inline-block me-2" style="width:auto;">
-              <option value="ALL">Todos</option>
-              <option value="INFO">Info</option>
-              <option value="WARNING">Atenção</option>
-              <option value="CRITICAL">Crítico</option>
-            </select>
+              <!--            <select id="alertsFilter" class="form-select form-select-sm d-inline-block me-2" style="width:auto;">-->
+              <!--              <option value="ALL">Todos</option>-->
+              <!--              <option value="INFO">Info</option>-->
+              <!--              <option value="WARNING">Atenção</option>-->
+              <!--              <option value="CRITICAL">Crítico</option>-->
+              <!--            </select>-->
             <button id="openAlertsModalBtn" class="btn btn-sm btn-outline-secondary">Ver todos</button>
           </div>
         </div>
@@ -206,16 +206,30 @@
           </table>
         </div>
       </div>
-<!--      <div class="modal-footer">-->
-<!--        <nav aria-label="Paginação">-->
-<!--          <ul id="alertsModalPagination" class="pagination mb-0"></ul>-->
-<!--        </nav>-->
-<!--        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>-->
-<!--      </div>-->
+        <div class="modal-footer">
+            <nav aria-label="Paginação">
+                <ul id="alertsModalPagination" class="pagination mb-0">
+                    {% for item in alerts_pagination_items %}
+                      {% if item.type == 'dots' %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                      {% else %}
+                        <li class="page-item {% if item.disabled %}disabled{% endif %} {% if item.active %}active{% endif %}">
+                          {% if item.page %}
+                            <a class="page-link" href="?page={{ item.page }}">{{ item.label }}</a>
+                          {% else %}
+                            <span class="page-link">{{ item.label }}</span>
+                          {% endif %}
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
     </div>
   </div>
 </div>
 
-<script type="application/json" id="alertsAllData">{{ alerts_all_json|safe }}</script>
+<script type="text/plain" id="alertsAllData">{{ alerts_all_json|safe }}</script>
 <script src="{% static 'js/alerts_modal.js' %}"></script>
 {% endblock %}

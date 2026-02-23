@@ -97,6 +97,47 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .alerts-list::-webkit-scrollbar { height: 8px; width: 8px; }
 .alerts-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 8px; }
 
+/* Garantir que a nav da paginação ocupe toda a largura do footer e centralize o UL */
+body #alertsModal .modal-footer nav {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+  padding: 0 1rem; /* evita que a paginação fique colada na borda */
+  box-sizing: border-box;
+}
+
+/* Configura o UL para ficar centralizado e evitar que itens fiquem escondidos à esquerda */
+body #alertsModal #alertsModalPagination {
+  margin: 0 !important;
+  white-space: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 0.25rem 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+#alertsModalPagination {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+#alertsModalPagination::-webkit-scrollbar {
+  height: 6px;
+}
+
+/* Garante que o modal content permita visualização do rodapé e não corte o conteúdo horizontalmente */
+body #alertsModal .modal-content {
+  overflow: visible !important;
+}
+
 @media (max-width: 992px) { .dash-grid { grid-template-columns: 1fr; } }
 @media (max-width: 768px) { .stat-grid { grid-template-columns: 1fr; } }
 @media (max-width: 576px) {
@@ -112,4 +153,3 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .anim-1 { animation: slideUp 0.5s ease-out 0.1s both; }
 .anim-2 { animation: slideUp 0.5s ease-out 0.2s both; }
 .anim-3 { animation: slideUp 0.5s ease-out 0.3s both; }
-

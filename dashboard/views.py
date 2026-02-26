@@ -10,6 +10,7 @@ import csv
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 import json
+from django.db import IntegrityError, transaction
 
 
 from monitor.models import Empresa
@@ -21,6 +22,8 @@ def home(request):
     empresa = Empresa.objects.filter(user=request.user).first()
     alerts = []
     alerts_page = None
+    alerts_compact_pages = []
+    alerts_all_json = '[]'
 
     if not empresa:
         if request.method == 'POST':
@@ -70,7 +73,6 @@ def home(request):
             return pages
 
         alerts_compact_pages = compact_pages(current, total)
-        # prepare full alerts JSON for modal (client-side pagination and filtering)
         try:
             alerts_list = list(all_alerts.order_by('-created_at').values('id','level','message','created_at'))
             alerts_all_json = json.dumps(alerts_list, default=str)
@@ -111,14 +113,23 @@ def create_invoice(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = InvoiceForm(request.POST)
+        form = InvoiceForm(request.POST, empresa=empresa)
         if form.is_valid():
-            invoice = form.save(commit=False)
-            invoice.empresa = empresa
-            invoice.save()
-            return redirect('dashboard')
+            # checar unicidade: não permitir same invoice_id para a mesma empresa
+            invoice_id = form.cleaned_data.get('invoice_id')
+            if empresa.invoices.filter(invoice_id=invoice_id).exists():
+                form.add_error('invoice_id', 'Já existe uma nota com esse ID para a sua empresa.')
+            else:
+                invoice = form.save(commit=False)
+                invoice.empresa = empresa
+                try:
+                    with transaction.atomic():
+                        invoice.save()
+                    return redirect('dashboard')
+                except IntegrityError:
+                    form.add_error(None, 'Erro ao salvar a nota: ID já existe (condição de concorrência).')
     else:
-        form = InvoiceForm()
+        form = InvoiceForm(empresa=empresa)
     return render(request, 'dashboard/create_invoice.html', {'form': form})
 
 

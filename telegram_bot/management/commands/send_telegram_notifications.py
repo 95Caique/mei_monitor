@@ -19,7 +19,7 @@ class Command(BaseCommand):
     help = "Enviar notificações do Telegram para usuários habilitados (executado pelo cron)"
 
     def handle(self, *args, **options):
-        token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
+        global_token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
         profiles = TelegramProfile.objects.filter(enabled=True).select_related("user")
         if not profiles.exists():
             self.stdout.write("Nenhum perfil do Telegram conectado, nada a fazer.")
@@ -27,6 +27,10 @@ class Command(BaseCommand):
 
         for profile in profiles:
             user = profile.user
+            token = profile.bot_token or global_token
+            if not token:
+                self.stdout.write(f"TELEGRAM_BOT_TOKEN não definido para {user.username}; pulando envio.")
+                continue
             empresas = Empresa.objects.filter(user=user, ativa=True)
             pending_alerts = Alert.objects.filter(empresa__in=empresas, notified=False).order_by('created_at')
             if not pending_alerts.exists():

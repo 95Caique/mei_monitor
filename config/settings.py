@@ -14,10 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-utk*nq$u-dhd1qvxq-603=#9%!koso3w+he-5h5i)e^_oe#1k!')
-
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = str(os.environ.get('DEBUG', 'True')).strip().lower() in ('1', 'true', 'yes')
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
 
 
 # Application definition
@@ -124,15 +122,17 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', None)
-if not TELEGRAM_BOT_TOKEN:
-    TELEGRAM_BOT_TOKEN = ''
+# Carrega token do Telegram de forma segura (simples):
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+if TELEGRAM_BOT_TOKEN:
+    TELEGRAM_BOT_TOKEN = TELEGRAM_BOT_TOKEN.strip().strip("'\"")
+else:
+    TELEGRAM_BOT_TOKEN = None
 
 # django-crontab jobs: run 4 times a day (midnight, 06:00, 12:00, 18:00 UTC)
 CRONJOBS = [
-    ('*/10 * * * *', 'django.core.management.call_command', ['poll_mei_accounts']),
-    ('0 0 * * *', 'django.core.management.call_command', ['send_telegram_notifications']),
-    ('0 6 * * *', 'django.core.management.call_command', ['send_telegram_notifications']),
-    ('0 12 * * *', 'django.core.management.call_command', ['send_telegram_notifications']),
-    ('0 18 * * *', 'django.core.management.call_command', ['send_telegram_notifications']),
+    ('0 0 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
+    ('0 6 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
+    ('0 12 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
+    ('0 18 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
 ]

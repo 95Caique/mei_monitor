@@ -38,7 +38,9 @@ class Empresa(models.Model):
 
     # new fields
     last_checked = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=50, default="unknown")
+    # Default status set to a simple, human-friendly value for new empresas
+    # Previously defaulted to "unknown" which showed as UNKNOWN in the UI
+    status = models.CharField(max_length=50, default="ATIVO")
 
     def __str__(self):
         return f"{self.cnpj} - {self.razao_social}"
@@ -46,9 +48,9 @@ class Empresa(models.Model):
 
 class Alert(models.Model):
     LEVEL_CHOICES = (
-        ("INFO", "Info"),
-        ("WARNING", "Warning"),
-        ("CRITICAL", "Critical"),
+        ("INFO", "Informativo"),
+        ("WARNING", "Aviso"),
+        ("CRITICAL", "Crítico"),
     )
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='alerts')
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='INFO')
@@ -65,9 +67,11 @@ class Alert(models.Model):
 
 class Invoice(models.Model):
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='invoices')
-    invoice_id = models.CharField(max_length=128, verbose_name ='Preencha o numero da nota', help_text='ID externo da nota')
+    invoice_id = models.CharField(max_length=128, verbose_name ='Preencha o numero da nota',
+    help_text='Preencha o numero ou dê um nome à nota para identificação')
     total = models.DecimalField(max_digits=12,verbose_name ='Total Faturado', decimal_places=2)
-    status = models.CharField(max_length=20, choices=(('ISSUED','Emitida'),('CANCELLED','Cancelada'),('DRAFT','Rascunho')), default='Emitida')
+    status = models.CharField(max_length=20,
+    choices=(('ISSUED','Emitida'),('CANCELLED','Cancelada'),('DRAFT','Rascunho')), default='Emitida')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_remote = models.BooleanField(default=False, db_index=True)

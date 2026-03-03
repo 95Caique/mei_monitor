@@ -22,6 +22,10 @@ def edit_profile(request):
                 ok = send_message(token, chat, test_text)
                 if ok:
                     messages.success(request, 'Mensagem de teste enviada com sucesso!')
+                    # marcar na tela como conectado quando o teste for bem sucedido
+                    if not tp.enabled:
+                        tp.enabled = True
+                        tp.save(update_fields=['enabled'])
                 else:
                     messages.error(request, 'Falha ao enviar a mensagem de teste. Verifique o token/chat_id.')
             else:
@@ -30,4 +34,5 @@ def edit_profile(request):
     else:
         form = TelegramProfileForm(instance=profile)
 
-    return render(request, 'telegram_bot/profile.html', {'form': form, 'profile': profile})
+    connected = bool(profile.enabled)
+    return render(request, 'telegram_bot/profile.html', {'form': form, 'profile': profile, 'connected': connected})

@@ -15,7 +15,7 @@ STATUS_PT = {
 }
 
 LEVEL_PT = {
-    'INFO': 'Info',
+    'INFO': 'Informativo',
     'WARNING': 'Atenção',
     'CRITICAL': 'Crítico',
 }
@@ -62,11 +62,16 @@ def invoice_saved(sender, instance, created, **kwargs):
     if created:
         status_label = _status_pt(instance.status)
         msg = f"Nova nota registrada: {instance.invoice_id} — R$ {float(instance.total):.2f} — {status_label}"
-        Alert.objects.create(empresa=empresa, level='INFO', message=msg)
+        alert = Alert.objects.create(empresa=empresa, level='INFO', message=msg)
         try:
             profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
-            if profile and token:
-                send_message(token, profile.chat_id, msg)
+            if profile:
+                profile_token = profile.bot_token or token
+                if profile_token and profile.chat_id:
+                    sent = send_message(profile_token, profile.chat_id, msg)
+                    if sent:
+                        alert.notified = True
+                        alert.save(update_fields=['notified'])
         except Exception:
             pass
     else:
@@ -79,11 +84,16 @@ def invoice_saved(sender, instance, created, **kwargs):
             changes.append(f"valor: R$ {float(prev_total):.2f} -> R$ {float(instance.total):.2f}")
         if changes:
             msg = f"Nota atualizada: {instance.invoice_id} — {'; '.join(changes)}"
-            Alert.objects.create(empresa=empresa, level='WARNING', message=msg)
+            alert = Alert.objects.create(empresa=empresa, level='WARNING', message=msg)
             try:
                 profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
-                if profile and token:
-                    send_message(token, profile.chat_id, msg)
+                if profile:
+                    profile_token = profile.bot_token or token
+                    if profile_token and profile.chat_id:
+                        sent = send_message(profile_token, profile.chat_id, msg)
+                        if sent:
+                            alert.notified = True
+                            alert.save(update_fields=['notified'])
             except Exception:
                 pass
 
@@ -93,7 +103,6 @@ def invoice_saved(sender, instance, created, **kwargs):
         agg = Invoice.objects.filter(empresa=empresa, status__iexact='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
         annual_total = float(agg.get('total') or 0)
 
-        # determine alert level
         if annual_total >= MEI_ANNUAL_LIMIT:
             level = 'CRITICAL'
             msg = f"Atenção: Faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}. Total atual: R$ {format_currency_br(annual_total)}."
@@ -109,11 +118,16 @@ def invoice_saved(sender, instance, created, **kwargs):
             since = now - timezone.timedelta(hours=24)
             exists = Alert.objects.filter(empresa=empresa, level=level, message__icontains='Faturamento anual', created_at__gte=since).exists()
             if not exists:
-                Alert.objects.create(empresa=empresa, level=level, message=msg)
+                alert = Alert.objects.create(empresa=empresa, level=level, message=msg)
                 try:
                     profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
-                    if profile and token:
-                        send_message(token, profile.chat_id, msg)
+                    if profile:
+                        profile_token = profile.bot_token or token
+                        if profile_token and profile.chat_id:
+                            sent = send_message(profile_token, profile.chat_id, msg)
+                            if sent:
+                                alert.notified = True
+                                alert.save(update_fields=['notified'])
                 except Exception:
                     pass
     except Exception:
@@ -125,11 +139,16 @@ def invoice_deleted(sender, instance, **kwargs):
     empresa = instance.empresa
     token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
     msg = f"Nota removida: {instance.invoice_id} — R$ {float(instance.total):.2f}"
-    Alert.objects.create(empresa=empresa, level='WARNING', message=msg)
+    alert = Alert.objects.create(empresa=empresa, level='WARNING', message=msg)
     try:
         profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
-        if profile and token:
-            send_message(token, profile.chat_id, msg)
+        if profile:
+            profile_token = profile.bot_token or token
+            if profile_token and profile.chat_id:
+                sent = send_message(profile_token, profile.chat_id, msg)
+                if sent:
+                    alert.notified = True
+                    alert.save(update_fields=['notified'])
     except Exception:
         pass
 
@@ -152,11 +171,16 @@ def invoice_deleted(sender, instance, **kwargs):
             since = now - timezone.timedelta(hours=24)
             exists = Alert.objects.filter(empresa=empresa, level=level, message__icontains='Faturamento anual', created_at__gte=since).exists()
             if not exists:
-                Alert.objects.create(empresa=empresa, level=level, message=msg2)
+                alert2 = Alert.objects.create(empresa=empresa, level=level, message=msg2)
                 try:
                     profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
-                    if profile and token:
-                        send_message(token, profile.chat_id, msg2)
+                    if profile:
+                        profile_token = profile.bot_token or token
+                        if profile_token and profile.chat_id:
+                            sent = send_message(profile_token, profile.chat_id, msg2)
+                            if sent:
+                                alert2.notified = True
+                                alert2.save(update_fields=['notified'])
                 except Exception:
                     pass
     except Exception:

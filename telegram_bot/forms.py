@@ -3,7 +3,7 @@ from .models import TelegramProfile
 
 
 class TelegramProfileForm(forms.ModelForm):
-    test_message = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Mensagem de teste (opcional)"}))
+    test_message = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Escreva sua mensagem de teste (opcional)"}))
 
     class Meta:
         model = TelegramProfile

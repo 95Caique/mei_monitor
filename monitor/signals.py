@@ -21,7 +21,15 @@ LEVEL_PT = {
 }
 
 MEI_ANNUAL_LIMIT = 81000.00
-MEI_ALERT_THRESHOLD = 0.8 * MEI_ANNUAL_LIMIT  # 80%
+
+MEI_ALERT_THRESHOLDS = {
+    50000.00: "INFO",     # 50k - informativo
+    60000.00: "WARNING",  # 60k - atenção
+    70000.00: "WARNING",  # 70k - atenção
+    75000.00: "WARNING",  # 75k - atenção crescente
+    80000.00: "CRITICAL", # 80k - crítico (muito próximo)
+    81000.00: "CRITICAL"  # 81k - limite ultrapassado
+}
 
 
 def format_currency_br(value):
@@ -103,20 +111,32 @@ def invoice_saved(sender, instance, created, **kwargs):
         agg = Invoice.objects.filter(empresa=empresa, status__iexact='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
         annual_total = float(agg.get('total') or 0)
 
-        if annual_total >= MEI_ANNUAL_LIMIT:
+        level = None
+        msg = None
+
+        if annual_total >= 81000.00:
             level = 'CRITICAL'
             msg = f"Atenção: Faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}. Total atual: R$ {format_currency_br(annual_total)}."
-        elif annual_total >= MEI_ALERT_THRESHOLD:
+        elif annual_total >= 80000.00:
+            level = 'CRITICAL'
+            msg = f"Alerta crítico: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 75000.00:
             level = 'WARNING'
-            pct = (annual_total / MEI_ANNUAL_LIMIT) * 100
-            msg = f"Atenção: Faturamento anual próximo do limite ({pct:.0f}%). Total atual: R$ {format_currency_br(annual_total)} de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
-        else:
-            level = None
-            msg = None
+            msg = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 70000.00:
+            level = 'WARNING'
+            msg = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 60000.00:
+            level = 'WARNING'
+            msg = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 50000.00:
+            level = 'INFO'
+            msg = f"Informativo: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
 
         if level and msg:
+            # Verificar se já foi enviado um alerta similar nas últimas 24h para evitar spam
             since = now - timezone.timedelta(hours=24)
-            exists = Alert.objects.filter(empresa=empresa, level=level, message__icontains='Faturamento anual', created_at__gte=since).exists()
+            exists = Alert.objects.filter(empresa=empresa, level=level, message__icontains=f'emitiu R$ {format_currency_br(annual_total)}', created_at__gte=since).exists()
             if not exists:
                 alert = Alert.objects.create(empresa=empresa, level=level, message=msg)
                 try:
@@ -157,19 +177,35 @@ def invoice_deleted(sender, instance, **kwargs):
         year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         agg = Invoice.objects.filter(empresa=empresa, status__iexact='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
         annual_total = float(agg.get('total') or 0)
-        if annual_total >= MEI_ANNUAL_LIMIT:
+
+        # Gerar alertas baseados nos thresholds específicos após remoção
+        level = None
+        msg2 = None
+
+        # Verificar se ainda está em algum threshold após remoção
+        if annual_total >= 81000.00:
             level = 'CRITICAL'
             msg2 = f"Atenção: Faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}. Total atual: R$ {format_currency_br(annual_total)}."
-        elif annual_total >= MEI_ALERT_THRESHOLD:
+        elif annual_total >= 80000.00:
+            level = 'CRITICAL'
+            msg2 = f"Alerta crítico: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 75000.00:
             level = 'WARNING'
-            pct = (annual_total / MEI_ANNUAL_LIMIT) * 100
-            msg2 = f"Atenção: Faturamento anual próximo do limite ({pct:.0f}%). Total atual: R$ {format_currency_br(annual_total)} de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
-        else:
-            level = None
-            msg2 = None
+            msg2 = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 70000.00:
+            level = 'WARNING'
+            msg2 = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 60000.00:
+            level = 'WARNING'
+            msg2 = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+        elif annual_total >= 50000.00:
+            level = 'INFO'
+            msg2 = f"Informativo: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+
         if level and msg2:
+            # Verificar se já foi enviado um alerta similar nas últimas 24h para evitar spam
             since = now - timezone.timedelta(hours=24)
-            exists = Alert.objects.filter(empresa=empresa, level=level, message__icontains='Faturamento anual', created_at__gte=since).exists()
+            exists = Alert.objects.filter(empresa=empresa, level=level, message__icontains=f'emitiu R$ {format_currency_br(annual_total)}', created_at__gte=since).exists()
             if not exists:
                 alert2 = Alert.objects.create(empresa=empresa, level=level, message=msg2)
                 try:

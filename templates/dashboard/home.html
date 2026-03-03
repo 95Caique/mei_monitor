@@ -43,32 +43,51 @@
   </div>
 
   <!-- CARDS ESTATÍSTICAS -->
-  <div class="stat-grid anim-2">
-    <div class="glass-card stat-card">
+  <div class="stat-grid anim-2" style="grid-template-columns: {% if mei_limit_info %}1fr 1fr 1fr{% else %}repeat(2,1fr){% endif %};">
+    {% if mei_limit_info %}
+    <div class="glass-card stat-card mei-limit">
       <div class="stat-header">
-        <span class="stat-label">Total Faturado</span>
-        <span class="stat-icon green">📈</span>
+        <span class="stat-label">Limite MEI {{ mei_limit_info.year }}</span>
+        <span class="stat-icon {% if mei_limit_info.alert_level == 'danger' %}red{% elif mei_limit_info.alert_level == 'warning' %}orange{% elif mei_limit_info.alert_level == 'info' %}blue{% else %}green{% endif %}">
+          {% if mei_limit_info.alert_level == 'danger' %}⚠️{% elif mei_limit_info.alert_level == 'warning' %}⚡{% elif mei_limit_info.alert_level == 'info' %}📊{% else %}✅{% endif %}
+        </span>
       </div>
-        <div class="stat-value">R$ {{ total_invoices_sum|currency_pt }}</div>
-      <div class="stat-change up">Este período</div>
-    </div>
-    <div class="glass-card stat-card expense">
-      <div class="stat-header">
-        <span class="stat-label">Notas Emitidas</span>
-        <span class="stat-icon red">📋</span>
+      <div class="stat-value">{{ mei_limit_info.percentage|floatformat:1 }}%</div>
+      <div class="stat-change {% if mei_limit_info.alert_level == 'danger' %}danger{% elif mei_limit_info.alert_level == 'warning' %}warning{% elif mei_limit_info.alert_level == 'info' %}info{% else %}success{% endif %}">
+        {{ mei_limit_info.alert_message }}
       </div>
-      <div class="stat-value">{{ empresa.invoices.count }}</div>
-      <div class="stat-change">Total de notas</div>
-    </div>
-    <div class="glass-card stat-card invest">
-      <div class="stat-header">
-        <span class="stat-label">Status MEI</span>
-        <span class="stat-icon gold">✅</span>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ mei_limit_info.percentage|floatformat:1 }}%; background-color: {% if mei_limit_info.alert_level == 'danger' %}#dc3545{% elif mei_limit_info.alert_level == 'warning' %}#ffc107{% elif mei_limit_info.alert_level == 'info' %}#17a2b8{% else %}#28a745{% endif %};"></div>
       </div>
-      <div class="stat-value">{{ empresa.status }}</div>
-      <div class="stat-change">{{ empresa.tipo }}</div>
+      <small class="text-muted">R$ {{ annual_total|currency_pt }} de R$ {{ mei_limit_info.limit|currency_pt }}</small>
     </div>
-  </div>
+    {% endif %}
+
+     <div class="glass-card stat-card">
+       <div class="stat-header">
+         <span class="stat-label">Total Faturado</span>
+         <span class="stat-icon green">📈</span>
+       </div>
+      <div class="stat-value">R$ {{ total_invoices_sum|currency_pt }}</div>
+       <div class="stat-change up">Este período</div>
+     </div>
+     <div class="glass-card stat-card expense">
+       <div class="stat-header">
+         <span class="stat-label">Notas Emitidas</span>
+         <span class="stat-icon red">📋</span>
+       </div>
+       <div class="stat-value">{{ empresa.invoices.count }}</div>
+       <div class="stat-change">Total de notas</div>
+     </div>
+    <!--    <div class="glass-card stat-card invest">-->
+    <!--      <div class="stat-header">-->
+    <!--        <span class="stat-label">Status MEI</span>-->
+    <!--        <span class="stat-icon gold">✅</span>-->
+    <!--      </div>-->
+    <!--      <div class="stat-value">{{ empresa.status }}</div>-->
+    <!--      <div class="stat-change">{{ empresa.tipo }}</div>-->
+    <!--    </div>-->
+   </div>
 
   <!-- GRID PRINCIPAL -->
   <div class="dash-grid">

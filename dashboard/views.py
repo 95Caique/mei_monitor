@@ -98,12 +98,62 @@ def home(request):
                 except Exception:
                     total_sum = Decimal('0.00')
 
+    annual_total = Decimal('0.00')
+    mei_limit_info = None
+    if empresa:
+        from django.utils import timezone
+        now = timezone.now()
+        year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        annual_qs = empresa.invoices.filter(status__iexact='ISSUED', created_at__gte=year_start)
+        annual_agg = annual_qs.aggregate(total_sum=Sum('total'))
+        annual_raw = annual_agg.get('total_sum')
+        if annual_raw:
+            try:
+                annual_total = Decimal(annual_raw)
+            except Exception:
+                annual_total = Decimal('0.00')
+
+        # Informações sobre o limite MEI
+        mei_limit = Decimal('81000.00')
+        remaining = mei_limit - annual_total
+        percentage = (annual_total / mei_limit * 100) if mei_limit > 0 else 0
+
+        # Determinar nível do alerta baseado na proximidade do limite
+        if annual_total >= mei_limit:
+            alert_level = 'danger'
+            alert_message = f"Limite ultrapassado em R$ {annual_total - mei_limit:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+        elif annual_total >= Decimal('80000.00'):
+            alert_level = 'danger'
+            alert_message = f"Muito próximo do limite! Restam apenas R$ {remaining:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+        elif annual_total >= Decimal('75000.00'):
+            alert_level = 'warning'
+            alert_message = f"Atenção! Restam R$ {remaining:,.2f} para o limite".replace(',', 'X').replace('.', ',').replace('X', '.')
+        elif annual_total >= Decimal('60000.00'):
+            alert_level = 'warning'
+            alert_message = f"Restam R$ {remaining:,.2f} para o limite anual".replace(',', 'X').replace('.', ',').replace('X', '.')
+        elif annual_total >= Decimal('50000.00'):
+            alert_level = 'info'
+            alert_message = f"Você já utilizou {percentage:.1f}% do limite anual"
+        else:
+            alert_level = 'success'
+            alert_message = f"Restam R$ {remaining:,.2f} para o limite anual".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+        mei_limit_info = {
+            'annual_total': annual_total,
+            'limit': mei_limit,
+            'remaining': remaining,
+            'percentage': float(percentage),
+            'alert_level': alert_level,
+            'alert_message': alert_message,
+            'year': now.year
+        }
+
     invoices_json = '[]'
     if empresa:
         invoices_list = list(empresa.invoices.order_by('-created_at').values('invoice_id','total','status','created_at'))
         invoices_json = json.dumps(invoices_list, default=str)
 
-    return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "alerts_compact_pages": alerts_compact_pages, "alerts_all_json": alerts_all_json, "total_invoices_sum": total_sum, "invoices_json": invoices_json})
+    return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "alerts_compact_pages": alerts_compact_pages, "alerts_all_json": alerts_all_json, "total_invoices_sum": total_sum, "invoices_json": invoices_json, "annual_total": annual_total, "mei_limit_info": mei_limit_info})
 
 
 @login_required

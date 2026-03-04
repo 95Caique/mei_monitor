@@ -5,7 +5,7 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 from decimal import Decimal
 import datetime
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import csv
 from django.utils.dateparse import parse_date
 from django.db.models import Q
@@ -307,3 +307,50 @@ def reports_export(request):
         writer.writerow([inv.invoice_id, inv.created_at.isoformat(), inv.status, str(inv.total)])
     return response
 
+
+@login_required
+def notifications_api(request):
+    """API endpoint para buscar notificações em tempo real"""
+    empresa = Empresa.objects.filter(user=request.user).first()
+    if not empresa:
+        return JsonResponse({'alerts': [], 'count': 0})
+
+    # Buscar apenas alertas recentes (últimas 24 horas por padrão)
+    from django.utils import timezone
+    since = timezone.now() - timezone.timedelta(hours=24)
+
+    # Permitir filtrar por timestamp do último check
+    last_check = request.GET.get('since')
+    if last_check:
+        try:
+            from django.utils.dateparse import parse_datetime
+            since = parse_datetime(last_check)
+        except:
+            pass
+
+    # Buscar alertas novos
+    alerts = empresa.alerts.filter(created_at__gte=since).order_by('-created_at')[:10]
+
+    # Converter para JSON
+    alerts_data = []
+    for alert in alerts:
+        alerts_data.append({
+            'id': alert.id,
+            'level': alert.level,
+            'message': alert.message,
+            'created_at': alert.created_at.isoformat(),
+            'level_display': {
+                'INFO': 'Informativo',
+                'WARNING': 'Atenção',
+                'CRITICAL': 'Crítico'
+            }.get(alert.level, alert.level)
+        })
+
+    # Contar alertas não lidos (últimas 24h)
+    unread_count = empresa.alerts.filter(created_at__gte=since).count()
+
+    return JsonResponse({
+        'alerts': alerts_data,
+        'count': unread_count,
+        'timestamp': timezone.now().isoformat()
+    })

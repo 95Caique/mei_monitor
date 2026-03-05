@@ -55,7 +55,19 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .quick-action-btn:hover .quick-action-icon { background: rgba(26,154,92,0.2); }
 .quick-action-label { font-size: 0.75rem; font-weight: 600; }
 
-.stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.25rem; }
+.stat-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-grid-two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.stat-grid-three {
+  grid-template-columns: repeat(3, 1fr);
+}
 .stat-card { padding: 1.25rem; border-left: 4px solid var(--primary); }
 .stat-card.expense { border-left-color: var(--danger); }
 .stat-card.invest { border-left-color: var(--accent); }
@@ -205,12 +217,97 @@ body #alertsModal .modal-content {
   overflow: visible !important;
 }
 
-@media (max-width: 992px) { .dash-grid { grid-template-columns: 1fr; } }
-@media (max-width: 768px) { .stat-grid { grid-template-columns: 1fr; } }
+/* Responsive Design */
+@media (max-width: 992px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .stat-grid-two,
+  .stat-grid-three {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dash-container {
+    padding: 0 0.75rem;
+  }
+
+  .balance-hero {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .balance-hero .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .balance-hero .meta span + span {
+    margin-left: 0;
+  }
+}
+
 @media (max-width: 576px) {
-  .quick-actions { flex-wrap: wrap; }
-  .quick-action-btn { flex: 1 1 45%; }
-  .balance-hero .amount { font-size: 1.5rem; }
+  .quick-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .quick-action-btn {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+    padding: 0.75rem 0.25rem;
+  }
+
+  .quick-action-label {
+    font-size: 0.7rem;
+  }
+
+  .balance-hero .amount {
+    font-size: 1.5rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.2rem;
+  }
+
+  /* MEI card specific responsive adjustments */
+  .stat-card.mei-limit .stat-change {
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
+
+  .stat-card.mei-limit small {
+    font-size: 0.7rem;
+  }
+
+  .progress-bar {
+    height: 4px;
+    margin: 0.5rem 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .balance-hero {
+    padding: 1rem;
+  }
+
+  .balance-hero .amount {
+    font-size: 1.3rem;
+  }
+
+  .quick-action-btn {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .quick-action-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
 }
 
 @keyframes slideUp {

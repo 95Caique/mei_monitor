@@ -47,7 +47,7 @@
   </div>
 
   <!-- CARDS ESTATÍSTICAS -->
-  <div class="stat-grid anim-2" style="grid-template-columns: {% if mei_limit_info %}1fr 1fr 1fr{% else %}repeat(2,1fr){% endif %};">
+  <div class="stat-grid anim-2{% if mei_limit_info %} stat-grid-three{% else %} stat-grid-two{% endif %}">
     {% if mei_limit_info %}
     <div class="glass-card stat-card mei-limit">
       <div class="stat-header">

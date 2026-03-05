@@ -14,7 +14,8 @@ from django.db import IntegrityError, transaction
 
 
 from monitor.models import Empresa
-from monitor.forms import EmpresaForm, InvoiceForm
+from monitor.forms import EmpresaForm, InvoiceForm, InvoiceEditForm
+from monitor.models import Invoice, Alert
 
 
 @login_required
@@ -354,3 +355,208 @@ def notifications_api(request):
         'count': unread_count,
         'timestamp': timezone.now().isoformat()
     })
+
+
+@login_required
+def manage_invoices(request):
+    """View para listar e gerenciar todas as notas"""
+    empresa = Empresa.objects.filter(user=request.user).first()
+    if not empresa:
+        return redirect('dashboard')
+
+    # Filtros
+    search = request.GET.get('search', '')
+    status_filter = request.GET.get('status', '')
+
+    invoices_qs = empresa.invoices.all()
+
+    if search:
+        invoices_qs = invoices_qs.filter(
+            Q(invoice_id__icontains=search) |
+            Q(total__icontains=search)
+        )
+
+    if status_filter:
+        invoices_qs = invoices_qs.filter(status=status_filter)
+
+    # Ordenação e paginação
+    invoices_qs = invoices_qs.order_by('-created_at')
+    paginator = Paginator(invoices_qs, 15)
+    page = request.GET.get('page', 1)
+
+    try:
+        invoices_page = paginator.page(page)
+    except PageNotAnInteger:
+        invoices_page = paginator.page(1)
+    except EmptyPage:
+        invoices_page = paginator.page(paginator.num_pages)
+
+    # Estatísticas
+    total_invoices = empresa.invoices.count()
+    issued_count = empresa.invoices.filter(status='ISSUED').count()
+    cancelled_count = empresa.invoices.filter(status='CANCELLED').count()
+    draft_count = empresa.invoices.filter(status='DRAFT').count()
+
+    context = {
+        'empresa': empresa,
+        'invoices': invoices_page,
+        'search': search,
+        'status_filter': status_filter,
+        'total_invoices': total_invoices,
+        'issued_count': issued_count,
+        'cancelled_count': cancelled_count,
+        'draft_count': draft_count,
+        'status_choices': [
+            ('', 'Todos'),
+            ('ISSUED', 'Emitidas'),
+            ('CANCELLED', 'Canceladas'),
+            ('DRAFT', 'Rascunho')
+        ]
+    }
+
+    return render(request, 'dashboard/manage_invoices.html', context)
+
+
+@login_required
+def edit_invoice(request, invoice_id):
+    """View para editar uma nota específica"""
+    empresa = Empresa.objects.filter(user=request.user).first()
+    if not empresa:
+        return redirect('dashboard')
+
+    try:
+        invoice = Invoice.objects.get(id=invoice_id, empresa=empresa)
+    except Invoice.DoesNotExist:
+        from django.contrib import messages
+        messages.error(request, 'Nota não encontrada.')
+        return redirect('manage_invoices')
+
+    if request.method == 'POST':
+        # Criar form customizado que não valida uniqueness do invoice_id para edição
+        form = InvoiceForm(request.POST, instance=invoice, empresa=empresa)
+
+        # Remove validação de unicidade para edição
+        form.fields['invoice_id'].validators = []
+
+        if form.is_valid():
+            # Validar unicidade manualmente apenas se o invoice_id mudou
+            new_invoice_id = form.cleaned_data.get('invoice_id')
+            if new_invoice_id != invoice.invoice_id:
+                if empresa.invoices.filter(invoice_id=new_invoice_id).exists():
+                    form.add_error('invoice_id', 'Já existe uma nota com esse ID para a sua empresa.')
+                else:
+                    try:
+                        with transaction.atomic():
+                            form.save()
+                        from django.contrib import messages
+                        messages.success(request, f'Nota {invoice.invoice_id} editada com sucesso!')
+                        return redirect('manage_invoices')
+                    except IntegrityError:
+                        form.add_error('invoice_id', 'Erro ao salvar: ID já existe.')
+            else:
+                # Se o invoice_id não mudou, salvar normalmente
+                try:
+                    with transaction.atomic():
+                        form.save()
+                    from django.contrib import messages
+                    messages.success(request, f'Nota {invoice.invoice_id} editada com sucesso!')
+                    return redirect('manage_invoices')
+                except Exception as e:
+                    form.add_error(None, f'Erro ao salvar: {str(e)}')
+    else:
+        form = InvoiceForm(instance=invoice, empresa=empresa)
+
+    context = {
+        'form': form,
+        'invoice': invoice,
+        'empresa': empresa
+    }
+
+    return render(request, 'dashboard/edit_invoice.html', context)
+
+
+@login_required
+def cancel_invoice(request, invoice_id):
+    """View para cancelar uma nota"""
+    empresa = Empresa.objects.filter(user=request.user).first()
+    if not empresa:
+        return redirect('dashboard')
+
+    try:
+        invoice = Invoice.objects.get(id=invoice_id, empresa=empresa)
+    except Invoice.DoesNotExist:
+        from django.contrib import messages
+        messages.error(request, 'Nota não encontrada.')
+        return redirect('manage_invoices')
+
+    if request.method == 'POST':
+        if invoice.status == 'CANCELLED':
+            from django.contrib import messages
+            messages.warning(request, 'Esta nota já está cancelada.')
+            return redirect('manage_invoices')
+
+        # Cancelar a nota
+        old_status = invoice.status
+        invoice.status = 'CANCELLED'
+
+        try:
+            with transaction.atomic():
+                invoice.save()
+
+            from django.contrib import messages
+            messages.success(request, f'Nota {invoice.invoice_id} cancelada com sucesso!')
+
+            # O signal já vai criar o alert automaticamente
+
+        except Exception as e:
+            from django.contrib import messages
+            messages.error(request, f'Erro ao cancelar nota: {str(e)}')
+
+        return redirect('manage_invoices')
+
+    context = {
+        'invoice': invoice,
+        'empresa': empresa
+    }
+
+    return render(request, 'dashboard/cancel_invoice.html', context)
+
+
+@login_required
+def delete_invoice(request, invoice_id):
+    """View para excluir uma nota permanentemente"""
+    empresa = Empresa.objects.filter(user=request.user).first()
+    if not empresa:
+        return redirect('dashboard')
+
+    try:
+        invoice = Invoice.objects.get(id=invoice_id, empresa=empresa)
+    except Invoice.DoesNotExist:
+        from django.contrib import messages
+        messages.error(request, 'Nota não encontrada.')
+        return redirect('manage_invoices')
+
+    if request.method == 'POST':
+        invoice_id_display = invoice.invoice_id
+
+        try:
+            with transaction.atomic():
+                invoice.delete()
+
+            from django.contrib import messages
+            messages.success(request, f'Nota {invoice_id_display} excluída permanentemente!')
+
+            # O signal já vai criar o alert automaticamente
+
+        except Exception as e:
+            from django.contrib import messages
+            messages.error(request, f'Erro ao excluir nota: {str(e)}')
+
+        return redirect('manage_invoices')
+
+    context = {
+        'invoice': invoice,
+        'empresa': empresa
+    }
+
+    return render(request, 'dashboard/delete_invoice.html', context)

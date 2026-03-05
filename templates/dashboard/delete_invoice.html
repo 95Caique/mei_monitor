@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Excluir Nota - MEI Monitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+<link rel="stylesheet" href="{% static 'css/action-links.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="invoice-page">
+
+  <!-- HERO -->
+  <div class="invoice-hero">
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <span>›</span>
+        <a href="{% url 'manage_invoices' %}">Gerenciar Notas</a>
+        <span>›</span>
+        <span>Excluir Nota</span>
+      </div>
+      <h1>🗑️ Excluir Nota</h1>
+      <p class="hero-sub">Confirme a exclusão permanente da nota fiscal {{ invoice.invoice_id }}.</p>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="form-grid">
+
+    <!-- CONFIRMAÇÃO -->
+    <div class="form-card">
+      <div class="form-section-title">
+        <span>🚨</span> Confirmação de Exclusão
+      </div>
+
+      <div class="alert alert-danger">
+        <h5 class="alert-heading">🚨 ATENÇÃO - AÇÃO IRREVERSÍVEL!</h5>
+        <p class="mb-0">
+          Você está prestes a <strong>excluir permanentemente</strong> a nota fiscal. Esta ação:
+        </p>
+        <ul class="mt-2 mb-0">
+          <li><strong>NÃO PODE SER DESFEITA</strong> - a nota será removida definitivamente</li>
+          <li>Removerá todos os dados da nota do sistema</li>
+          <li>Removerá o valor do cálculo do limite MEI</li>
+          <li>Gerará um alerta automático sobre a exclusão</li>
+          <li>Afetará seus relatórios e histórico</li>
+        </ul>
+      </div>
+
+      <div class="alert alert-info">
+        <h6>💡 Alternativa: Cancelar em vez de Excluir</h6>
+        <p class="mb-0">
+          Se você deseja apenas remover a nota do cálculo MEI mas manter o registro,
+          considere <strong>cancelar</strong> a nota em vez de excluí-la.
+        </p>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-check-label">
+            <input type="checkbox" id="confirmDelete" class="form-check-input" required>
+            Eu entendo que esta ação é <strong>IRREVERSÍVEL</strong> e confirmo a exclusão permanente desta nota.
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+            <span>🗑️</span> EXCLUIR PERMANENTEMENTE
+          </button>
+          <a href="{% url 'manage_invoices' %}" class="btn-back">← Voltar</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SIDEBAR INFORMAÇÕES -->
+    <div>
+      <div class="preview-card">
+        <h3><span>📄</span> Dados da Nota</h3>
+        <div class="preview-line">
+          <span class="preview-label">ID da Nota:</span>
+          <span class="preview-value fw-bold">{{ invoice.invoice_id }}</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">Valor:</span>
+          <span class="preview-value fw-bold text-success">R$ {{ invoice.total|floatformat:2 }}</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">Status Atual:</span>
+          <span class="preview-value">
+            <span class="badge bg-{% if invoice.status == 'ISSUED' %}success{% elif invoice.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+              {% if invoice.status == 'ISSUED' %}Emitida{% elif invoice.status == 'CANCELLED' %}Cancelada{% else %}Rascunho{% endif %}
+            </span>
+          </span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">Criada em:</span>
+          <span class="preview-value">{{ invoice.created_at|date:"d/m/Y H:i" }}</span>
+        </div>
+      </div>
+
+      <div class="tips-card bg-warning-light">
+        <h4>⚠️ IMPACTO DA EXCLUSÃO</h4>
+        <ul>
+          <li><strong>Dados perdidos:</strong> Todos os dados desta nota serão perdidos para sempre</li>
+          <li><strong>Relatórios:</strong> A nota desaparecerá de todos os relatórios</li>
+          <li><strong>Limite MEI:</strong> O valor será removido do cálculo anual</li>
+          <li><strong>Histórico:</strong> Não haverá registro de que esta nota existiu</li>
+          <li><strong>Auditoria:</strong> Pode afetar auditorias futuras</li>
+        </ul>
+      </div>
+
+      <div class="preview-card">
+        <h4>🔄 Alternativas Seguras</h4>
+        <div class="d-grid gap-2">
+          <a href="{% url 'cancel_invoice' invoice.id %}" class="action-link action-cancel">
+            ❌ Cancelar Nota (Recomendado)
+          </a>
+          <a href="{% url 'edit_invoice' invoice.id %}" class="action-link action-edit">
+            ✏️ Editar Nota
+          </a>
+        </div>
+        <small class="text-muted mt-2 d-block">
+          <strong>Recomendação:</strong> Use "Cancelar" para manter o histórico mas remover do cálculo MEI.
+        </small>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('confirmDelete').addEventListener('change', function() {
+    document.getElementById('deleteButton').disabled = !this.checked;
+});
+</script>
+{% endblock %}

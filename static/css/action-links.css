@@ -1,0 +1,53 @@
+
+.action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin: 0 2px;
+}
+
+.action-edit {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.action-edit:hover {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.action-cancel {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.action-cancel:hover {
+    background: #fde68a;
+    color: #d97706;
+}
+
+.action-delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.action-delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.action-toggle {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.action-toggle:hover {
+    background: #fde68a;
+    color: #d97706;
+}

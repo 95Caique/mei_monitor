@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cancelar Nota - MEI Monitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+<link rel="stylesheet" href="{% static 'css/action-links.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="invoice-page">
+
+  <!-- HERO -->
+  <div class="invoice-hero">
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <span>›</span>
+        <a href="{% url 'manage_invoices' %}">Gerenciar Notas</a>
+        <span>›</span>
+        <span>Cancelar Nota</span>
+      </div>
+      <h1>❌ Cancelar Nota</h1>
+      <p class="hero-sub">Confirme o cancelamento da nota fiscal {{ invoice.invoice_id }}.</p>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="form-grid">
+
+    <!-- CONFIRMAÇÃO -->
+    <div class="form-card">
+      <div class="form-section-title">
+        <span>⚠️</span> Confirmação de Cancelamento
+      </div>
+
+      <div class="alert alert-warning">
+        <h5 class="alert-heading">⚠️ Atenção!</h5>
+        <p class="mb-0">
+          Você está prestes a <strong>cancelar</strong> a nota fiscal. Esta ação:
+        </p>
+        <ul class="mt-2 mb-0">
+          <li>Mudará o status da nota para "Cancelada"</li>
+          <li>Removerá o valor do cálculo do limite MEI</li>
+          <li>Gerará um alerta automático sobre o cancelamento</li>
+          <li>Pode ser revertida editando a nota posteriormente</li>
+        </ul>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-danger">
+            <span>❌</span> Confirmar Cancelamento
+          </button>
+          <a href="{% url 'manage_invoices' %}" class="btn-back">← Voltar</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SIDEBAR INFORMAÇÕES -->
+    <div>
+      <div class="preview-card">
+        <h3><span>📄</span> Dados da Nota</h3>
+        <div class="preview-line">
+          <span class="preview-label">ID da Nota:</span>
+          <span class="preview-value fw-bold">{{ invoice.invoice_id }}</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">Valor:</span>
+          <span class="preview-value fw-bold text-success">R$ {{ invoice.total|floatformat:2 }}</span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">Status Atual:</span>
+          <span class="preview-value">
+            <span class="badge bg-{% if invoice.status == 'ISSUED' %}success{% elif invoice.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+              {% if invoice.status == 'ISSUED' %}Emitida{% elif invoice.status == 'CANCELLED' %}Cancelada{% else %}Rascunho{% endif %}
+            </span>
+          </span>
+        </div>
+        <div class="preview-line">
+          <span class="preview-label">Criada em:</span>
+          <span class="preview-value">{{ invoice.created_at|date:"d/m/Y H:i" }}</span>
+        </div>
+      </div>
+
+      <div class="tips-card">
+        <h4>💡 O que acontece ao cancelar?</h4>
+        <ul>
+          <li><strong>Cálculo MEI:</strong> O valor desta nota será removido do seu faturamento anual</li>
+          <li><strong>Relatórios:</strong> A nota aparecerá como "Cancelada" nos relatórios</li>
+          <li><strong>Alertas:</strong> Você receberá uma notificação sobre o cancelamento</li>
+          <li><strong>Reversão:</strong> Você pode editar a nota posteriormente para mudar o status</li>
+        </ul>
+      </div>
+
+      <div class="preview-card">
+        <h4>🔄 Outras Ações</h4>
+        <div class="d-grid gap-2">
+          <a href="{% url 'edit_invoice' invoice.id %}" class="action-link action-edit">
+            ✏️ Editar Nota
+          </a>
+          <a href="{% url 'delete_invoice' invoice.id %}"
+             class="action-link action-delete"
+             onclick="return confirm('Tem certeza que deseja excluir esta nota permanentemente?')">
+            🗑️ Excluir Permanentemente
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -37,3 +37,29 @@ class InvoiceForm(forms.ModelForm):
             if Invoice.objects.filter(empresa=self.empresa, invoice_id=invoice_id).exists():
                 raise forms.ValidationError('Já existe uma nota com esse ID para a sua empresa.')
         return invoice_id
+
+
+class InvoiceEditForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = ['invoice_id', 'total', 'status']
+
+    def __init__(self, *args, empresa=None, instance=None, **kwargs):
+        super().__init__(*args, instance=instance, **kwargs)
+        self.empresa = empresa
+        self.instance = instance
+
+    def clean_invoice_id(self):
+        invoice_id = self.cleaned_data.get('invoice_id')
+        if not invoice_id:
+            return invoice_id
+
+        # Só validar unicidade se o invoice_id mudou
+        if self.instance and self.instance.invoice_id == invoice_id:
+            return invoice_id
+
+        if self.empresa is not None:
+            from .models import Invoice
+            if Invoice.objects.filter(empresa=self.empresa, invoice_id=invoice_id).exists():
+                raise forms.ValidationError('Já existe uma nota com esse ID para a sua empresa.')
+        return invoice_id

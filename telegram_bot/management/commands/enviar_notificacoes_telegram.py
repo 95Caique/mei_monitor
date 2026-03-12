@@ -3,7 +3,8 @@ from django.core.management import call_command
 
 
 class Command(BaseCommand):
-    help = 'Enviar notificações ao Telegram (wrapper em português)\n\nEste comando delega para o comando existente `send_telegram_notifications`.'
+    help = ('Enviar notificações ao Telegram (wrapper em português)\n\nEste comando delega para o comando existente '
+            '`send_telegram_notifications`.')
 
     def handle(self, *args, **options):
         call_command('send_telegram_notifications')

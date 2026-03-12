@@ -325,11 +325,16 @@ def notifications_api(request):
     if last_check:
         try:
             from django.utils.dateparse import parse_datetime
-            since = parse_datetime(last_check)
+            parsed_since = parse_datetime(last_check)
+            if parsed_since is not None:
+                since = parsed_since
         except:
             pass
 
-    # Buscar alertas novos
+    # Buscar alertas novos (garantir que since nunca seja None)
+    if since is None:
+        since = timezone.now() - timezone.timedelta(hours=24)
+
     alerts = empresa.alerts.filter(created_at__gte=since).order_by('-created_at')[:10]
 
     # Converter para JSON

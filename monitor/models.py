@@ -35,11 +35,7 @@ class Empresa(models.Model):
 
     ativa = models.BooleanField(default=True)
     criada_em = models.DateTimeField(auto_now_add=True)
-
-    # new fields
     last_checked = models.DateTimeField(null=True, blank=True)
-    # Default status set to a simple, human-friendly value for new empresas
-    # Previously defaulted to "unknown" which showed as UNKNOWN in the UI
     status = models.CharField(max_length=50, default="ATIVO")
 
     def __str__(self):

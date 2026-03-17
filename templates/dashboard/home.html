@@ -82,8 +82,8 @@
                 <div class="progress-fill"
                      style="width: {{ mei_limit_info.percentage|floatformat:1 }}%; background-color: {% if mei_limit_info.alert_level == 'danger' %}#dc3545{% elif mei_limit_info.alert_level == 'warning' %}#ffc107{% elif mei_limit_info.alert_level == 'info' %}#17a2b8{% else %}#28a745{% endif %};"></div>
             </div>
-            <small class="text-muted">R$ {{ annual_total|currency_pt }} de R$ {{ mei_limit_info.limit|currency_pt
-                }}</small>
+            <small class="text-muted">R$ {{ annual_total|currency_pt }} de
+                R$ {{ mei_limit_info.limit|currency_pt }}</small>
         </div>
         {% endif %}
 

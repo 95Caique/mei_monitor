@@ -69,7 +69,7 @@ def invoice_saved(sender, instance, created, **kwargs):
 
     if created:
         status_label = _status_pt(instance.status)
-        msg = f"Nova nota registrada: {instance.invoice_id} — R$ {float(instance.total):.2f} — {status_label}"
+        msg = f"📄 NOVA NOTA CRIADA 📄\nID: {instance.invoice_id}\n💰 Valor: R$ {float(instance.total):.2f}\n📊 Status: {status_label}"
         alert = Alert.objects.create(empresa=empresa, level='INFO', message=msg)
         try:
             profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
@@ -86,12 +86,14 @@ def invoice_saved(sender, instance, created, **kwargs):
         prev_status = getattr(instance, '_prev_status', None)
         prev_total = getattr(instance, '_prev_total', None)
         changes = []
+
         if prev_status is not None and prev_status != instance.status:
-            changes.append(f"status: {_status_pt(prev_status)} -> {_status_pt(instance.status)}")
+            changes.append(f"Status: de {_status_pt(prev_status)} para {_status_pt(instance.status)}")
         if prev_total is not None and float(prev_total) != float(instance.total):
-            changes.append(f"valor: R$ {float(prev_total):.2f} -> R$ {float(instance.total):.2f}")
+            changes.append(f"💰 Valor: R$ {float(prev_total):.2f} → R$ {float(instance.total):.2f}")
+
         if changes:
-            msg = f"Nota atualizada: {instance.invoice_id} — {'; '.join(changes)}"
+            msg = f"✏️ NOTA ATUALIZADA ✏️\nNota: {instance.invoice_id}\n\n" + "\n".join(changes)
             alert = Alert.objects.create(empresa=empresa, level='WARNING', message=msg)
             try:
                 profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
@@ -116,22 +118,22 @@ def invoice_saved(sender, instance, created, **kwargs):
 
         if annual_total >= 81000.00:
             level = 'CRITICAL'
-            msg = f"Atenção: Faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}. Total atual: R$ {format_currency_br(annual_total)}."
+            msg = f"🚨 LIMITE ULTRAPASSADO 🚨\nSeu faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}.\nTotal atual: R$ {format_currency_br(annual_total)}."
         elif annual_total >= 80000.00:
             level = 'CRITICAL'
-            msg = f"Alerta crítico: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg = f"🚨 ALERTA CRÍTICO 🚨\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 75000.00:
             level = 'WARNING'
-            msg = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg = f"⚠️ ATENÇÃO ⚠️\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 70000.00:
             level = 'WARNING'
-            msg = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg = f"⚠️ ATENÇÃO ⚠️\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 60000.00:
             level = 'WARNING'
-            msg = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg = f"⚠️ ATENÇÃO ⚠️\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 50000.00:
             level = 'INFO'
-            msg = f"Informativo: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg = f"ℹ️ INFORMATIVO\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
 
         if level and msg:
             # Verificar se já foi enviado um alerta similar nas últimas 24h para evitar spam
@@ -158,7 +160,7 @@ def invoice_saved(sender, instance, created, **kwargs):
 def invoice_deleted(sender, instance, **kwargs):
     empresa = instance.empresa
     token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
-    msg = f"Nota removida: {instance.invoice_id} — R$ {float(instance.total):.2f}"
+    msg = f"🗑️ NOTA REMOVIDA 🗑️\nID: {instance.invoice_id}\n💰 Valor: R$ {float(instance.total):.2f}"
     alert = Alert.objects.create(empresa=empresa, level='WARNING', message=msg)
     try:
         profile = TelegramProfile.objects.filter(user=empresa.user, enabled=True).first()
@@ -185,22 +187,22 @@ def invoice_deleted(sender, instance, **kwargs):
         # Verificar se ainda está em algum threshold após remoção
         if annual_total >= 81000.00:
             level = 'CRITICAL'
-            msg2 = f"Atenção: Faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}. Total atual: R$ {format_currency_br(annual_total)}."
+            msg2 = f"🚨 LIMITE ULTRAPASSADO 🚨\nSeu faturamento anual ultrapassou o limite de R$ {format_currency_br(MEI_ANNUAL_LIMIT)}.\nTotal atual: R$ {format_currency_br(annual_total)}."
         elif annual_total >= 80000.00:
             level = 'CRITICAL'
-            msg2 = f"Alerta crítico: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg2 = f"🚨 ALERTA CRÍTICO 🚨\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 75000.00:
             level = 'WARNING'
-            msg2 = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg2 = f"⚠️ ATENÇÃO ⚠️\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 70000.00:
             level = 'WARNING'
-            msg2 = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg2 = f"⚠️ ATENÇÃO ⚠️\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 60000.00:
             level = 'WARNING'
-            msg2 = f"Atenção: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg2 = f"⚠️ ATENÇÃO ⚠️\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
         elif annual_total >= 50000.00:
             level = 'INFO'
-            msg2 = f"Informativo: Você já emitiu R$ {format_currency_br(annual_total)} em notas, o limite para esse ano é R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
+            msg2 = f"ℹ️ INFORMATIVO\nVocê já emitiu R$ {format_currency_br(annual_total)} em notas.\nLimite: R$ {format_currency_br(MEI_ANNUAL_LIMIT)}."
 
         if level and msg2:
             # Verificar se já foi enviado um alerta similar nas últimas 24h para evitar spam

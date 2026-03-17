@@ -86,16 +86,16 @@
         <tbody>
           {% for invoice in invoices %}
           <tr>
-            <td class="fw-bold">{{ invoice.invoice_id }}</td>
-            <td class="text-success fw-bold">R$ {{ invoice.total|currency_pt }}</td>
-            <td>
+            <td class="fw-bold" data-label="ID">{{ invoice.invoice_id }}</td>
+            <td class="text-success fw-bold" data-label="Valor">R$ {{ invoice.total|currency_pt }}</td>
+            <td data-label="Status">
               <span class="status-badge status-{{ invoice.status|lower }}">
                 {{ invoice.status|status_pt }}
               </span>
             </td>
-            <td>{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
-            <td>{{ invoice.updated_at|date:"d/m/Y H:i" }}</td>
-            <td>
+            <td data-label="Criada em">{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
+            <td data-label="Última atualização">{{ invoice.updated_at|date:"d/m/Y H:i" }}</td>
+            <td data-label="Ações">
               <div class="action-buttons">
                 <a href="{% url 'edit_invoice' invoice.id %}"
                    class="action-link action-edit"

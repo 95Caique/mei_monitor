@@ -61,12 +61,21 @@
         <div class="glass-card stat-card mei-limit">
             <div class="stat-header">
                 <span class="stat-label">Limite MEI {{ mei_limit_info.year }}</span>
-                <span class="stat-icon {% if mei_limit_info.alert_level == 'danger' %}red{% elif mei_limit_info.alert_level == 'warning' %}orange{% elif mei_limit_info.alert_level == 'info' %}blue{% else %}green{% endif %}">
-          {% if mei_limit_info.alert_level == 'danger' %}⚠️{% elif mei_limit_info.alert_level == 'warning' %}⚡{% elif mei_limit_info.alert_level == 'info' %}📊{% else %}✅{% endif %}
+                <span class="stat-icon {% if mei_limit_info.alert_level == 'danger' %}red
+                {% elif mei_limit_info.alert_level == 'warning' %}orange
+                {% elif mei_limit_info.alert_level == 'info' %}blue
+                {% else %}green{% endif %}">
+                  {% if mei_limit_info.alert_level == 'danger' %}⚠️
+                  {% elif mei_limit_info.alert_level == 'warning' %}⚡
+                  {% elif mei_limit_info.alert_level == 'info' %}📊
+                  {% else %}✅{% endif %}
         </span>
             </div>
             <div class="stat-value">{{ mei_limit_info.percentage|floatformat:1 }}%</div>
-            <div class="stat-change {% if mei_limit_info.alert_level == 'danger' %}danger{% elif mei_limit_info.alert_level == 'warning' %}warning{% elif mei_limit_info.alert_level == 'info' %}info{% else %}success{% endif %}">
+            <div class="stat-change {% if mei_limit_info.alert_level == 'danger' %}danger
+            {% elif mei_limit_info.alert_level == 'warning' %}warning
+            {% elif mei_limit_info.alert_level == 'info' %}info
+            {% else %}success{% endif %}">
                 {{ mei_limit_info.alert_message }}
             </div>
             <div class="progress-bar">
@@ -134,7 +143,8 @@
                 <div class="section-header">
                     <h5>Alertas recentes</h5>
                     <div>
-                        <!--            <select id="alertsFilter" class="form-select form-select-sm d-inline-block me-2" style="width:auto;">-->
+                        <!--            <select id="alertsFilter" class="form-select form-select-sm d-inline-block
+                                            me-2" style="width:auto;">-->
                         <!--              <option value="ALL">Todos</option>-->
                         <!--              <option value="INFO">Info</option>-->
                         <!--              <option value="WARNING">Atenção</option>-->
@@ -166,16 +176,19 @@
                         {% if p == '...' %}
                         <li class="page-item disabled"><span class="page-link">…</span></li>
                         {% else %}
-                        <li class="page-item {% if p == alerts_page.number %}active{% endif %}"><a class="page-link"
-                                                                                                   href="?page={{ p }}">{{
-                            p }}</a></li>
+                        <li class="page-item {% if p == alerts_page.number %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                        </li>
                         {% endif %}
                         {% endfor %}
                         {% if alerts_page.has_next %}
-                        <li class="page-item"><a class="page-link" href="?page={{ alerts_page.next_page_number }}">&raquo;</a>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ alerts_page.next_page_number }}">&raquo;</a>
                         </li>
                         {% else %}
-                        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        <li class="page-item disabled"><
+                            span class="page-link">&raquo;</span>
+                        </li>
                         {% endif %}
                     </ul>
                 </nav>

@@ -40,10 +40,16 @@ class Command(BaseCommand):
             for alert in pending_alerts:
                 level = LEVEL_PT.get(alert.level.upper(), alert.level)
                 text = f"[{level}] {alert.message}"
+
+                # Verificar se chat_id está preenchido
+                if not profile.chat_id:
+                    self.stdout.write(f"Chat ID não definido para {user.username}; pulando alerta {alert.id}.")
+                    continue
+
                 sent = send_message(token, profile.chat_id, text)
                 if sent:
                     alert.notified = True
                     alert.save(update_fields=['notified'])
-                    self.stdout.write(f"Alerta enviado{alert.id} to {user.username}")
+                    self.stdout.write(f"Alerta enviado {alert.id} to {user.username}")
                 else:
                     self.stdout.write(f"Falha ao enviar alerta {alert.id} to {user.username}")

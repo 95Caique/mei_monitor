@@ -114,13 +114,23 @@
     </div>
 
     <!-- GRID PRINCIPAL -->
-    <div class="dash-grid">
+    <div class="dash">
+           <div class="glass-card p-4 mb-3 card-mei-custom anim-2">
+                <h5 style="font-weight:700; margin-bottom:1rem;">MEI Info</h5>
+                <p><strong>{{ empresa.razao_social }}</strong></p>
+                <p class="text-muted" style="font-size:0.85rem;">CNPJ: {{ empresa.cnpj }}</p>
+                <p style="font-size:0.85rem;">
+                    <span class="badge bg-success">{{ empresa.tipo }}</span>
+                    {% if not empresa.ativa %}<span class="badge bg-secondary ms-1">Inativa</span>{% endif %}
+                </p>
+                <p class="text-muted" style="font-size:0.8rem; margin-top:0.75rem;">Última verificação: {{ empresa.last_checked }}</p>
+            </div>
         <div>
             <!-- ÚLTIMAS NOTAS -->
             <div class="glass-card p-4 mb-3 anim-2">
                 <div class="section-header">
                     <h5>Últimas Notas</h5>
-                    <a href="#">Ver todas</a>
+<!--                    <a href="#">Ver todas</a>-->
                 </div>
                 {% if empresa.invoices.exists %}
                 {% for inv in empresa.invoices.all|dictsortreversed:"created_at"|slice:":10" %}
@@ -200,17 +210,7 @@
 
         <!-- SIDEBAR -->
         <div>
-            <div class="glass-card p-4 mb-3 card-mei-custom anim-2">
-                <h5 style="font-weight:700; margin-bottom:1rem;">MEI Info</h5>
-                <p><strong>{{ empresa.razao_social }}</strong></p>
-                <p class="text-muted" style="font-size:0.85rem;">CNPJ: {{ empresa.cnpj }}</p>
-                <p style="font-size:0.85rem;">
-                    <span class="badge bg-success">{{ empresa.tipo }}</span>
-                    {% if not empresa.ativa %}<span class="badge bg-secondary ms-1">Inativa</span>{% endif %}
-                </p>
-                <p class="text-muted" style="font-size:0.8rem; margin-top:0.75rem;">Última verificação: {{
-                    empresa.last_checked }}</p>
-            </div>
+
             <!--      <div class="glass-card p-4 mb-3 anim-3">-->
             <!--        <h6 style="font-weight:700; margin-bottom:1rem;">Ações rápidas</h6>-->
             <!--        <a class="btn btn-outline-brand w-100 mb-2" href="{% url 'create_invoice' %}">📄 Criar Nota</a>-->

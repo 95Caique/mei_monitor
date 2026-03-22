@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load static labels form_tags %}
+{% load static %}
+{% load labels %}
 
 {% block title %}Relatórios - MEI Monitor{% endblock %}
 
@@ -21,7 +22,7 @@
             <p class="hero-sub">Análise completa do faturamento e notas fiscais.</p>
             <div class="company-badge">
                 <span>🏢</span>
-                {{ empresa.razao_social }} — {{ empresa.cnpj|format_cnpj }}
+                {{ empresa.razao_social }} — {{ empresa.cnpj }}
             </div>
         </div>
     </div>

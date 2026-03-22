@@ -123,8 +123,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 AUTH_USER_MODEL = 'accounts.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -132,17 +137,23 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Carrega token do Telegram de forma segura (simples):
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if TELEGRAM_BOT_TOKEN:
     TELEGRAM_BOT_TOKEN = TELEGRAM_BOT_TOKEN.strip().strip("'\"")
 else:
     TELEGRAM_BOT_TOKEN = None
 
-# django-crontab jobs: run 4 times a day (midnight, 06:00, 12:00, 18:00 UTC)
+
 CRONJOBS = [
+    # Notificações - Meia-noite UTC (21h de Brasília)
     ('0 0 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
+
+    # Notificações - 06h UTC (03h de Brasília)
     ('0 6 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
+
+    # Notificações - Meio-dia UTC (09h de Brasília)
     ('0 12 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
+
+    # Notificações - 18h UTC (15h de Brasília)
     ('0 18 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
 ]

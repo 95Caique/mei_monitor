@@ -52,7 +52,7 @@
                         <td>
                             {% if item.empresa %}
                             {{ item.empresa.razao_social }}<br>
-                            <small style="color:var(--text-secondary,#64748b)">{{ item.empresa.cnpj|format_cnpj }}</small>
+                            <small style="color:var(--text-secondary,#64748b)">{{ item.empresa.cnpj }}</small>
                             {% else %}
                             <span style="color:#94a3b8">—</span>
                             {% endif %}

@@ -105,7 +105,7 @@ def home(request):
         from django.utils import timezone
         now = timezone.now()
         year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        annual_qs = empresa.invoices.filter(status__iexact='ISSUED', created_at__gte=year_start)
+        annual_qs = empresa.invoices.filter(status='ISSUED', created_at__gte=year_start)
         annual_agg = annual_qs.aggregate(total_sum=Sum('total'))
         annual_raw = annual_agg.get('total_sum')
         if annual_raw:
@@ -151,7 +151,7 @@ def home(request):
 
     invoices_json = '[]'
     if empresa:
-        invoices_list = list(empresa.invoices.order_by('-created_at').values('invoice_id','total','status','created_at'))
+        invoices_list = list(empresa.invoices.only('invoice_id', 'total', 'status', 'created_at').order_by('-created_at').values('invoice_id','total','status','created_at'))
         invoices_json = json.dumps(invoices_list, default=str)
 
     return render(request, "dashboard/home.html", {"empresa": empresa, "alerts": alerts, "alerts_page": alerts_page, "alerts_compact_pages": alerts_compact_pages, "alerts_all_json": alerts_all_json, "total_invoices_sum": total_sum, "invoices_json": invoices_json, "annual_total": annual_total, "mei_limit_info": mei_limit_info})
@@ -373,7 +373,7 @@ def manage_invoices(request):
     search = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
 
-    invoices_qs = empresa.invoices.all()
+    invoices_qs = empresa.invoices.all().only('id', 'invoice_id', 'total', 'status', 'created_at', 'updated_at')
 
     if search:
         invoices_qs = invoices_qs.filter(
@@ -396,21 +396,23 @@ def manage_invoices(request):
     except EmptyPage:
         invoices_page = paginator.page(paginator.num_pages)
 
-    # Estatísticas
-    total_invoices = empresa.invoices.count()
-    issued_count = empresa.invoices.filter(status='ISSUED').count()
-    cancelled_count = empresa.invoices.filter(status='CANCELLED').count()
-    draft_count = empresa.invoices.filter(status='DRAFT').count()
+    # Estatísticas - Uma única query com aggregate
+    stats = empresa.invoices.aggregate(
+        total=Count('id'),
+        issued=Count('id', filter=Q(status='ISSUED')),
+        cancelled=Count('id', filter=Q(status='CANCELLED')),
+        draft=Count('id', filter=Q(status='DRAFT'))
+    )
 
     context = {
         'empresa': empresa,
         'invoices': invoices_page,
         'search': search,
         'status_filter': status_filter,
-        'total_invoices': total_invoices,
-        'issued_count': issued_count,
-        'cancelled_count': cancelled_count,
-        'draft_count': draft_count,
+        'total_invoices': stats['total'],
+        'issued_count': stats['issued'],
+        'cancelled_count': stats['cancelled'],
+        'draft_count': stats['draft'],
         'status_choices': [
             ('', 'Todos'),
             ('ISSUED', 'Emitidas'),

@@ -49,13 +49,17 @@ class Alert(models.Model):
         ("CRITICAL", "Crítico"),
     )
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='alerts')
-    level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='INFO')
+    level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='INFO', db_index=True)
     message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    notified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    notified = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['empresa', '-created_at']),
+            models.Index(fields=['empresa', 'notified', '-created_at']),
+        ]
 
     def __str__(self):
         return f"[{self.level}] {self.empresa.cnpj} - {self.message[:50]}"
@@ -64,16 +68,20 @@ class Alert(models.Model):
 class Invoice(models.Model):
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='invoices')
     invoice_id = models.CharField(max_length=128, verbose_name ='Preencha o numero da nota',
-    help_text='Preencha o numero ou dê um nome à nota para identificação')
+    help_text='Preencha o numero ou dê um nome à nota para identificação', db_index=True)
     total = models.DecimalField(max_digits=12,verbose_name ='Total Faturado', decimal_places=2)
     status = models.CharField(max_length=20,
-    choices=(('ISSUED','Emitida'),('CANCELLED','Cancelada'),('DRAFT','Rascunho')), default='Emitida')
-    created_at = models.DateTimeField(auto_now_add=True)
+    choices=(('ISSUED','Emitida'),('CANCELLED','Cancelada'),('DRAFT','Rascunho')), default='ISSUED', db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_remote = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         unique_together = ('empresa', 'invoice_id')
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['status', '-created_at']),
+        ]
 
     def __str__(self):
         return f"Invoice {self.invoice_id} ({self.empresa.cnpj}) - {self.total} - {self.status}"

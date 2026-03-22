@@ -110,7 +110,7 @@ def invoice_saved(sender, instance, created, **kwargs):
     try:
         now = timezone.now()
         year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        agg = Invoice.objects.filter(empresa=empresa, status__iexact='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
+        agg = Invoice.objects.filter(empresa=empresa, status='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
         annual_total = float(agg.get('total') or 0)
 
         level = None
@@ -177,7 +177,7 @@ def invoice_deleted(sender, instance, **kwargs):
     try:
         now = timezone.now()
         year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        agg = Invoice.objects.filter(empresa=empresa, status__iexact='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
+        agg = Invoice.objects.filter(empresa=empresa, status='ISSUED', created_at__gte=year_start).aggregate(total=Sum('total'))
         annual_total = float(agg.get('total') or 0)
 
         # Gerar alertas baseados nos thresholds específicos após remoção

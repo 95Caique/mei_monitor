@@ -1,6 +1,6 @@
 {# ===== users_list.html — Reutiliza CSS do create_invoice ===== #}
 {% extends "base.html" %}
-{% load static form_tags %}
+{% load static form_tags hijack %}
 
 {% block title %}Listar MEIs - MEI Monitor{% endblock %}
 
@@ -70,6 +70,16 @@
                             <a href="{% url 'adminpanel:user_toggle' item.user.id %}" class="action-link action-toggle">
                                 {% if item.user.is_active %}🔒 Desativar{% else %}🔓 Ativar{% endif %}
                             </a>
+                            {% if request.user|can_hijack:item.user %}
+                            <form action="{% url 'hijack:acquire' %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_pk" value="{{ item.user.pk }}">
+                                <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                                <button type="submit" class="action-link action-hijack" title="Fazer login como este usuário" style="background:none; border:none; padding:0; cursor:pointer;">
+                                    🔐 Acessar
+                                </button>
+                            </form>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

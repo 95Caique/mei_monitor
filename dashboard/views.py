@@ -300,12 +300,30 @@ def reports_export(request):
     if end_date:
         qs = qs.filter(created_at__date__lte=end_date)
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="invoices_{empresa.cnpj}.csv"'
-    writer = csv.writer(response)
-    writer.writerow(['invoice_id','created_at','status','total'])
+    STATUS_PT = {
+        'ISSUED': 'Emitida',
+        'CANCELLED': 'Cancelada',
+        'DRAFT': 'Rascunho'
+    }
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = f'attachment; filename="notas_{empresa.cnpj}.csv"'
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['Notas', 'Data de Emissão', 'Status', 'Valor (R$)'])
+
     for inv in qs.order_by('-created_at'):
-        writer.writerow([inv.invoice_id, inv.created_at.isoformat(), inv.status, str(inv.total)])
+        data_formatada = inv.created_at.strftime('%d/%m/%Y %H:%M')
+        status_pt = STATUS_PT.get(inv.status, inv.status)
+        valor_formatado = str(inv.total).replace('.', ',')
+
+        writer.writerow([
+            inv.invoice_id,
+            data_formatada,
+            status_pt,
+            valor_formatado
+        ])
+
     return response
 
 
@@ -316,11 +334,9 @@ def notifications_api(request):
     if not empresa:
         return JsonResponse({'alerts': [], 'count': 0})
 
-    # Buscar apenas alertas recentes (últimas 24 horas por padrão)
     from django.utils import timezone
     since = timezone.now() - timezone.timedelta(hours=24)
 
-    # Permitir filtrar por timestamp do último check
     last_check = request.GET.get('since')
     if last_check:
         try:
@@ -331,7 +347,6 @@ def notifications_api(request):
         except:
             pass
 
-    # Buscar alertas novos (garantir que since nunca seja None)
     if since is None:
         since = timezone.now() - timezone.timedelta(hours=24)
 
@@ -352,7 +367,6 @@ def notifications_api(request):
             }.get(alert.level, alert.level)
         })
 
-    # Contar alertas não lidos (últimas 24h)
     unread_count = empresa.alerts.filter(created_at__gte=since).count()
 
     return JsonResponse({
@@ -364,7 +378,6 @@ def notifications_api(request):
 
 @login_required
 def manage_invoices(request):
-    """View para listar e gerenciar todas as notas"""
     empresa = Empresa.objects.filter(user=request.user).first()
     if not empresa:
         return redirect('dashboard')
@@ -384,7 +397,6 @@ def manage_invoices(request):
     if status_filter:
         invoices_qs = invoices_qs.filter(status=status_filter)
 
-    # Ordenação e paginação
     invoices_qs = invoices_qs.order_by('-created_at')
     paginator = Paginator(invoices_qs, 15)
     page = request.GET.get('page', 1)
@@ -396,7 +408,6 @@ def manage_invoices(request):
     except EmptyPage:
         invoices_page = paginator.page(paginator.num_pages)
 
-    # Estatísticas - Uma única query com aggregate
     stats = empresa.invoices.aggregate(
         total=Count('id'),
         issued=Count('id', filter=Q(status='ISSUED')),
@@ -439,14 +450,11 @@ def edit_invoice(request, invoice_id):
         return redirect('manage_invoices')
 
     if request.method == 'POST':
-        # Criar form customizado que não valida uniqueness do invoice_id para edição
         form = InvoiceForm(request.POST, instance=invoice, empresa=empresa)
 
-        # Remove validação de unicidade para edição
         form.fields['invoice_id'].validators = []
 
         if form.is_valid():
-            # Validar unicidade manualmente apenas se o invoice_id mudou
             new_invoice_id = form.cleaned_data.get('invoice_id')
             if new_invoice_id != invoice.invoice_id:
                 if empresa.invoices.filter(invoice_id=new_invoice_id).exists():
@@ -513,7 +521,6 @@ def cancel_invoice(request, invoice_id):
             from django.contrib import messages
             messages.success(request, f'Nota {invoice.invoice_id} cancelada com sucesso!')
 
-            # O signal já vai criar o alert automaticamente
 
         except Exception as e:
             from django.contrib import messages
@@ -553,7 +560,6 @@ def delete_invoice(request, invoice_id):
             from django.contrib import messages
             messages.success(request, f'Nota {invoice_id_display} excluída permanentemente!')
 
-            # O signal já vai criar o alert automaticamente
 
         except Exception as e:
             from django.contrib import messages

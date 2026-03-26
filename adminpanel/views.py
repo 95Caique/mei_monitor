@@ -24,11 +24,9 @@ def users_list(request):
     if q:
         users = users.filter(username__icontains=q) | users.filter(email__icontains=q)
     users = users.order_by('username')
-    # For each user, fetch their empresa if exists
     users_with_empresas = []
     for u in users:
         empresa = Empresa.objects.filter(user=u).first()
-        # if search by empresa fields, filter here
         if q:
             if empresa:
                 if q.lower() not in (empresa.razao_social or '').lower() and q not in (empresa.cnpj or '') and q.lower() not in (u.username or '').lower() and q.lower() not in (u.email or '').lower():
@@ -73,3 +71,5 @@ def user_toggle_active(request, user_id):
     user.is_active = not user.is_active
     user.save()
     return redirect('adminpanel:users_list')
+
+

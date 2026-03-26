@@ -22,6 +22,8 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',
 
 INSTALLED_APPS = [
     'accounts',
+    'hijack',
+    'hijack.contrib.admin',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'hijack.middleware.HijackUserMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -107,6 +110,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Login redirect
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'accounts:login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -157,3 +163,8 @@ CRONJOBS = [
     # Notificações - 18h UTC (15h de Brasília)
     ('0 18 * * *', 'django.core.management.call_command', ['enviar_notificacoes_telegram']),
 ]
+
+HIJACK_PERMISSION_CHECK = 'hijack.permissions.superusers_only'
+HIJACK_INSERT_BEFORE = '</body>'
+HIJACK_PERMISSION_CHECK = 'hijack.permissions.superusers_only'
+

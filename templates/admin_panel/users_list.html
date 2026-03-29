@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
 <link rel="stylesheet" href="{% static 'css/admin-panel.css' %}">
 <link rel="stylesheet" href="{% static 'css/action-links.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin-users-responsive.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -35,7 +36,8 @@
             <p class="table-count">Total: {{ users_with_empresas|length }} registro(s)</p>
 
             {% if users_with_empresas %}
-            <div style="overflow-x:auto; border-radius:12px; border:1px solid var(--border-color, #e2e8f0);">
+            <!-- Desktop: Tabela tradicional -->
+            <div class="table-responsive" style="border-radius:12px; border:1px solid var(--border-color, #e2e8f0); overflow: hidden;">
                 <table class="mei-table">
                     <thead>
                     <tr>
@@ -52,7 +54,7 @@
                         <td>
                             {% if item.empresa %}
                             {{ item.empresa.razao_social }}<br>
-                            <small style="color:var(--text-secondary,#64748b)">{{ item.empresa.cnpj }}</small>
+                            <small style="color:var(--text-secondary,#64748b)">CNPJ: {{ item.empresa.cnpj }}</small>
                             {% else %}
                             <span style="color:#94a3b8">—</span>
                             {% endif %}
@@ -65,26 +67,77 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'adminpanel:user_edit' item.user.id %}" class="action-link action-edit">✏️
-                                Editar</a>
-                            <a href="{% url 'adminpanel:user_toggle' item.user.id %}" class="action-link action-toggle">
-                                {% if item.user.is_active %}🔒 Desativar{% else %}🔓 Ativar{% endif %}
-                            </a>
-                            {% if request.user|can_hijack:item.user %}
-                            <form action="{% url 'hijack:acquire' %}" method="POST" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="user_pk" value="{{ item.user.pk }}">
-                                <input type="hidden" name="next" value="{% url 'dashboard' %}">
-                                <button type="submit" class="action-link action-hijack" title="Fazer login como este usuário" style="background:none; border:none; padding:0; cursor:pointer;">
-                                    🔐 Acessar
-                                </button>
-                            </form>
-                            {% endif %}
+                            <div style="display:flex; gap:0.5rem;">
+                                <a href="{% url 'adminpanel:user_edit' item.user.id %}" class="action-link action-edit" title="Editar">✏️ Editar</a>
+                                <a href="{% url 'adminpanel:user_toggle' item.user.id %}" class="action-link action-toggle" title="Ativar/Desativar">
+                                    {% if item.user.is_active %}🔒 Desativar{% else %}🔓 Ativar{% endif %}
+                                </a>
+                                {% if request.user|can_hijack:item.user %}
+                                <form action="{% url 'hijack:acquire' %}" method="POST" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_pk" value="{{ item.user.pk }}">
+                                    <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                                    <button type="submit" class="action-link action-hijack" title="Acessar como este usuário">🔐 Hijack</button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile: Cards -->
+            <div class="mei-table-mobile">
+                {% for item in users_with_empresas %}
+                <div class="user-card">
+                    <div class="user-card-header">
+                        <span class="user-card-name">{{ item.user.username }}</span>
+                        <div class="user-card-status">
+                            {% if item.user.is_active %}
+                            <span class="badge-active yes"><span class="dot"></span> Ativo</span>
+                            {% else %}
+                            <span class="badge-active no"><span class="dot"></span> Inativo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="user-card-info">
+                        <div class="user-card-info-row">
+                            <span class="user-card-info-label">Empresa:</span>
+                            <span class="user-card-info-value">
+                                {% if item.empresa %}
+                                {{ item.empresa.razao_social }}
+                                {% else %}
+                                <span style="color:#94a3b8">—</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if item.empresa %}
+                        <div class="user-card-info-row">
+                            <span class="user-card-info-label">CNPJ:</span>
+                            <span class="user-card-info-value">{{ item.empresa.cnpj }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="user-card-actions">
+                        <a href="{% url 'adminpanel:user_edit' item.user.id %}" class="action-link action-edit">✏️ Editar</a>
+                        <a href="{% url 'adminpanel:user_toggle' item.user.id %}" class="action-link action-toggle">
+                            {% if item.user.is_active %}🔒 Desativar{% else %}🔓 Ativar{% endif %}
+                        </a>
+                        {% if request.user|can_hijack:item.user %}
+                        <form action="{% url 'hijack:acquire' %}" method="POST" style="display:flex;">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_pk" value="{{ item.user.pk }}">
+                            <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                            <button type="submit" class="action-link action-hijack" style="flex:1;">🔐 Hijack</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             {% else %}
             <div class="table-empty">
@@ -103,3 +156,4 @@
         </div>
     </div>
 {% endblock %}
+

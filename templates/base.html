@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -10,8 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
     <link href="/static/css/notifications.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'icone-de-moeda.png' %}">
     {% block extra_css %}{% endblock %}
-
 </head>
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">

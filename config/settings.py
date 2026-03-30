@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 
-# carega as  variaveis do .env se tiver (python-dotenv)
 try:
     from dotenv import load_dotenv
     load_dotenv(os.path.join(Path(__file__).resolve().parent.parent, '.env'))

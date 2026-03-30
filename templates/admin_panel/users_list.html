@@ -1,4 +1,3 @@
-{# ===== users_list.html — Reutiliza CSS do create_invoice ===== #}
 {% extends "base.html" %}
 {% load static form_tags hijack %}
 
@@ -13,8 +12,6 @@
 
 {% block content %}
 <div class="invoice-page">
-
-
     <div class="invoice-hero">
         <div class="hero-content">
             <div class="hero-breadcrumb">
@@ -27,16 +24,14 @@
         </div>
     </div>
 
+
     <div class="form">
         <div class="form-card">
             <div class="form-section-title">
                 <span>👥</span> MEIs Cadastrados
             </div>
-
             <p class="table-count">Total: {{ users_with_empresas|length }} registro(s)</p>
-
             {% if users_with_empresas %}
-            <!-- Desktop: Tabela tradicional -->
             <div class="table-responsive" style="border-radius:12px; border:1px solid var(--border-color, #e2e8f0); overflow: hidden;">
                 <table class="mei-table">
                     <thead>
@@ -61,25 +56,51 @@
                         </td>
                         <td>
                             {% if item.user.is_active %}
-                            <span class="badge-active yes"><span class="dot"></span> Ativo</span>
+                                <span class="badge rounded-pill bg-success">
+                                    Ativo
+                                </span>
                             {% else %}
-                            <span class="badge-active no"><span class="dot"></span> Inativo</span>
+                                <span class="badge rounded-pill bg-secondary">
+                                    Inativo
+                                </span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div style="display:flex; gap:0.5rem;">
-                                <a href="{% url 'adminpanel:user_edit' item.user.id %}" class="action-link action-edit" title="Editar">✏️ Editar</a>
-                                <a href="{% url 'adminpanel:user_toggle' item.user.id %}" class="action-link action-toggle" title="Ativar/Desativar">
-                                    {% if item.user.is_active %}🔒 Desativar{% else %}🔓 Ativar{% endif %}
+
+                       <td>
+                            <div class="d-flex gap-2 align-items-center">
+
+                                <!-- Editar -->
+                                <a href="{% url 'adminpanel:user_edit' item.user.id %}"
+                                   class="badge rounded-pill bg-info"
+                                   style="text-decoration: none; font-size: .85em; padding: .5em 1em;"
+                                   title="Editar">
+                                    Editar
                                 </a>
+
+                                <!-- Ativar / Desativar -->
+                                <a href="{% url 'adminpanel:user_toggle' item.user.id %}"
+                                   class="badge rounded-pill {% if item.user.is_active %}bg-danger{% else %}bg-success{% endif %}"
+                                   style="text-decoration: none; font-size: .85em; padding: .5em 1em;"
+                                   title="Ativar/Desativar">
+                                    {% if item.user.is_active %}Desativar{% else %}Ativar{% endif %}
+                                </a>
+
+                                <!-- Ver Perfil -->
                                 {% if request.user|can_hijack:item.user %}
-                                <form action="{% url 'hijack:acquire' %}" method="POST" style="display:inline;">
+                                <form action="{% url 'hijack:acquire' %}" method="POST" class="m-0">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_pk" value="{{ item.user.pk }}">
                                     <input type="hidden" name="next" value="{% url 'dashboard' %}">
-                                    <button type="submit" class="action-link action-hijack" title="Acessar como este usuário">🔐 Hijack</button>
+
+                                    <button type="submit"
+                                            class="badge rounded-pill bg-warning text-dark border-0"
+                                            style="font-size: .85em; padding: .5em 1em; cursor: pointer;"
+                                            title="Acessar como este usuário">
+                                        Ver Perfil
+                                    </button>
                                 </form>
                                 {% endif %}
+
                             </div>
                         </td>
                     </tr>

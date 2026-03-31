@@ -1,10 +1,60 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Usuário - MEI Monitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin-panel.css' %}">
+<style>
+.form-card form p {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-card form label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.form-card form input,
+.form-card form select {
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    font-size: 0.95rem;
+}
+
+.form-card form input:focus,
+.form-card form select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>Editar Usuário: {{ user.username }}</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Salvar</button>
-</form>
+<div class="invoice-page">
+    <div class="form">
+        <div class="form-card" style="max-width:520px; margin:0 auto;">
+            <form method="post">
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+                {{ form.as_p }}
+
+                <div style="margin-top:1.5rem; display:flex; gap:1rem;">
+                    <button type="submit" class="btn-submit" style="flex:1;">
+                         Salvar
+                    </button>
+                    <a href="{% url 'adminpanel:users_list' %}" class="btn-back" style="flex:1; text-align:center;">
+                        ← Voltar para Lista
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

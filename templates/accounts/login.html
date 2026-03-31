@@ -1,30 +1,54 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Entrar - MEI Monitor{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin-panel.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card p-4 card-mei">
-            <h3 class="card-title mb-3">Entrar</h3>
-            <form method="post" action="">
+<div class="invoice-page">
+    <!-- FORM -->
+    <div class="form">
+        <div class="form-card" style="max-width:500px; margin:0 auto;">
+            <div class="form-section-title">
+                <i class="fa-solid fa-right-to-bracket"></i> Entrar
+            </div>
+
+            <form method="post">
                 {% csrf_token %}
+
                 {{ form.non_field_errors }}
-                <div class="mb-3">
+
+                <div class="form-group">
                     {{ form.username.label_tag }}
                     {{ form.username }}
                     {{ form.username.errors }}
                 </div>
-                <div class="mb-3">
+
+                <div class="form-group">
                     {{ form.password.label_tag }}
                     {{ form.password }}
                     {{ form.password.errors }}
                 </div>
-                <button type="submit" class="btn btn-primary">Entrar</button>
+
+                <button type="submit" class="btn-submit" style="width:100%;">
+                    Entrar
+                </button>
             </form>
-            <hr>
-            <p class="small">Não tem conta? Peça ao administrador criar (ou registre-se se permitido).</p>
+
+            <div style="margin-top:1.5rem; text-align:center;">
+                <p class="small">
+                    Não tem conta? <br>
+                    <span style="color:var(--text-secondary,#64748b)">
+                        Peça ao administrador criar seu acesso.
+                    </span>
+                </p>
+            </div>
         </div>
     </div>
+
 </div>
 {% endblock %}

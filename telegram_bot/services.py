@@ -24,7 +24,6 @@ _bot_instance = None
 
 
 def _load_dotenv_if_needed():
-    # tenta carregar .env a partir do BASE_DIR se TELEGRAM_BOT_TOKEN não estiver definido
     try:
         if not os.getenv('TELEGRAM_BOT_TOKEN'):
             base = Path(__file__).resolve().parent.parent

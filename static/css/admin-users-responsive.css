@@ -1,3 +1,8 @@
+/* ============================================================================
+   ADMIN PANEL USERS - RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* DESKTOP (1024px e acima) */
 
 @media (min-width: 1024px) {
   .mei-table {
@@ -62,6 +67,7 @@
   }
 }
 
+/* TABLET (768px a 1023px) */
 
 @media (max-width: 1023px) and (min-width: 768px) {
   .mei-table {
@@ -111,15 +117,18 @@
   }
 }
 
+/* MOBILE (ate 767px) - LAYOUT EM CARDS */
+
 @media (max-width: 767px) {
-  /* Ocultar tabela tradicional */
-  .mei-table {
-    display: none;
+  /* Esconde a tabela no mobile */
+  .table-responsive {
+    display: none !important;
   }
 
-  /* Criar layout de cards para mobile */
+  /* Esconde os cards no mobile por padrao, mostra via grid */
   .mei-table-mobile {
-    display: block;
+    display: grid;
+    gap: 1rem;
     width: 100%;
   }
 
@@ -129,7 +138,6 @@
     border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 8px;
     padding: 1rem;
-    margin-bottom: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
@@ -260,11 +268,11 @@
   }
 }
 
+/* EXTRA SMALL (ate 480px) */
 
 @media (max-width: 480px) {
   .user-card {
     padding: 0.75rem;
-    margin-bottom: 0.75rem;
   }
 
   .user-card-name {
@@ -273,6 +281,7 @@
 
   .user-card-info-label {
     font-size: 0.75rem;
+    min-width: 65px;
   }
 
   .user-card-info-value {
@@ -284,4 +293,3 @@
     font-size: 0.8rem;
   }
 }
-

@@ -1,31 +1,34 @@
+/**
+ * Admin Users - Responsive Layout Switcher
+ * A responsividade agora e feita via CSS media queries (@see admin-users-responsive.css)
+ * Este script mantem-se para garantir compatibilidade com orientation change.
+ */
 
-function setupResponsiveLayout() {
-  const desktopTable = document.querySelector('.desktop-table');
-  const mobileCards = document.querySelector('.mei-table-mobile');
+(function() {
+  function setupResponsiveLayout() {
+    var desktopTable = document.querySelector('.table-responsive');
+    var mobileCards = document.querySelector('.mei-table-mobile');
 
-  function updateLayout() {
-    const width = window.innerWidth;
+    if (!desktopTable || !mobileCards) return;
 
-    if (width >= 768) {
-      if (desktopTable) desktopTable.style.display = 'block';
-      if (mobileCards) mobileCards.style.display = 'none';
-    } else {
-      if (desktopTable) desktopTable.style.display = 'none';
-      if (mobileCards) mobileCards.style.display = 'block';
+    function updateLayout() {
+      if (window.innerWidth < 768) {
+        desktopTable.style.display = 'none';
+        mobileCards.style.display = 'grid';
+      } else {
+        desktopTable.style.display = 'block';
+        mobileCards.style.display = 'none';
+      }
     }
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    window.addEventListener('orientationchange', updateLayout);
   }
 
-  updateLayout();
-
-  window.addEventListener('resize', updateLayout);
-  window.addEventListener('orientationchange', updateLayout);
-}
-
-document.addEventListener('DOMContentLoaded', setupResponsiveLayout);
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupResponsiveLayout);
-} else {
-  setupResponsiveLayout();
-}
-
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupResponsiveLayout);
+  } else {
+    setupResponsiveLayout();
+  }
+})();

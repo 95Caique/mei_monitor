@@ -4,8 +4,6 @@
 {% block title %}Excluir Nota - MEI Monitor{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
-<link rel="stylesheet" href="{% static 'css/action-links.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -26,10 +24,8 @@
     </div>
   </div>
 
-  <!-- GRID -->
   <div class="form-grid">
 
-    <!-- CONFIRMAÇÃO -->
     <div class="form-card">
       <div class="form-section-title">
         <span>🚨</span> Confirmação de Exclusão
@@ -76,7 +72,6 @@
       </form>
     </div>
 
-    <!-- SIDEBAR INFORMAÇÕES -->
     <div>
       <div class="preview-card">
         <h3><span>📄</span> Dados da Nota</h3>
@@ -116,7 +111,7 @@
       <div class="preview-card">
         <h4>🔄 Alternativas Seguras</h4>
         <div class="d-grid gap-2">
-          <a href="{% url 'cancel_invoice' invoice.id %}" class="action-link action-cancel">
+          <a href="{% url 'cancel_invoice' invoice.id %}?page={{ request.GET.page|default:1 }}" class="action-link action-cancel">
             ❌ Cancelar Nota (Recomendado)
           </a>
           <a href="{% url 'edit_invoice' invoice.id %}" class="action-link action-edit">

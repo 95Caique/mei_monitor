@@ -4,10 +4,6 @@
 {% block title %}Listar MEIs - MEI Monitor{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
-<link rel="stylesheet" href="{% static 'css/admin-panel.css' %}">
-<link rel="stylesheet" href="{% static 'css/action-links.css' %}">
-<link rel="stylesheet" href="{% static 'css/admin-users-responsive.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -56,13 +52,9 @@
                         </td>
                         <td>
                             {% if item.user.is_active %}
-                                <span class="badge rounded-pill bg-success">
-                                    Ativo
-                                </span>
+                                <span class="badge badge-green">Ativo</span>
                             {% else %}
-                                <span class="badge rounded-pill bg-secondary">
-                                    Inativo
-                                </span>
+                                <span class="badge badge-gray">Inativo</span>
                             {% endif %}
                         </td>
 
@@ -74,7 +66,6 @@
                                    title="Editar">
                                     Editar
                                 </a>
-
                                 <a href="{% url 'adminpanel:user_toggle' item.user.id %}"
                                    class="badge rounded-pill {% if item.user.is_active %}bg-danger{% else %}bg-success{% endif %}"
                                    style="text-decoration: none; font-size: .85em; padding: .5em 1em;"
@@ -82,7 +73,7 @@
                                     {% if item.user.is_active %}Desativar{% else %}Ativar{% endif %}
                                 </a>
 
-                                {% if request.user|can_hijack:item.user %}
+                               {% if request.user|can_hijack:item.user %}
                                 <form action="{% url 'hijack:acquire' %}" method="POST" class="m-0">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_pk" value="{{ item.user.pk }}">

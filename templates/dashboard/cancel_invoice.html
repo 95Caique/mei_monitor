@@ -4,8 +4,6 @@
 {% block title %}Cancelar Nota - MEI Monitor{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
-<link rel="stylesheet" href="{% static 'css/action-links.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -50,17 +48,17 @@
 
       <form method="post">
         {% csrf_token %}
+        <input type="hidden" name="page" value="{{ request.GET.page|default:1 }}">
 
         <div class="form-actions">
           <button type="submit" class="btn btn-danger">
             <span>❌</span> Confirmar Cancelamento
           </button>
-          <a href="{% url 'manage_invoices' %}" class="btn-back">← Voltar</a>
+          <a href="{% url 'manage_invoices' %}{% if request.GET.page %}?page={{ request.GET.page }}{% endif %}" class="btn-back">← Voltar</a>
         </div>
       </form>
     </div>
 
-    <!-- SIDEBAR INFORMAÇÕES -->
     <div>
       <div class="preview-card">
         <h3><span>📄</span> Dados da Nota</h3>

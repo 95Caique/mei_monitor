@@ -4,152 +4,244 @@
 
 {% block title %}Relatórios - MEI Monitor{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/reports.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="reports-page">
-
-    <div class="reports-hero">
-        <div class="hero-content">
-            <div class="hero-breadcrumb">
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-                <span>›</span>
-                <span>Relatórios</span>
-            </div>
-            <h1>📊 Relatórios</h1>
-            <p class="hero-sub">Análise completa do faturamento e notas fiscais.</p>
-            <div class="company-badge">
-                <span>🏢</span>
-                {{ empresa.razao_social }} — {{ empresa.cnpj }}
-            </div>
-        </div>
+<div style="margin-bottom: 32px;">
+    <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px; margin: 0 0 8px 0;">
+        📊 Relatórios
+    </h1>
+    <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px 0;">Análise completa do faturamento e notas fiscais</p>
+    <div style="background: var(--blue-bg); color: var(--blue); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-weight: 500;">
+        🏢 {{ empresa.razao_social }} — {{ empresa.cnpj }}
     </div>
+</div>
 
-    <form class="filter-bar" method="get">
-        <div class="filter-group">
-            <label>📅 Data Início</label>
-            <input type="date" name="start" value="{{ start_date }}"/>
+<div style="margin-bottom: 24px; padding: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 10px;">
+    <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+        <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;">Data Início</label>
+            <input type="date" name="start" value="{{ start_date }}" style="width: 100%;">
         </div>
-        <div class="filter-group">
-            <label>📅 Data Fim</label>
-            <input type="date" name="end" value="{{ end_date }}"/>
+        <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;">Data Fim</label>
+            <input type="date" name="end" value="{{ end_date }}" style="width: 100%;">
         </div>
-        <button type="submit" class="btn-filter">🔍 Filtrar</button>
-        <a class="btn-export"
-           href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}">
-            📥 Exportar CSV
-        </a>
+        <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">🔍 Filtrar</button>
+            <a href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}" class="btn btn-secondary" style="flex: 1; text-align: center;">📥 Exportar</a>
+        </div>
     </form>
+</div>
 
-    <div class="charts-grid" style="animation: fadeUp 0.5s ease-out 0.15s both;">
-        <div class="rp-card">
-            <h3><span>🥧</span> Notas por Status</h3>
+<div class="grid-2" style="margin-bottom: 24px;">
+    <div class="table-wrap">
+        <div class="table-head">
+            <h3 style="margin: 0;">🥧 Notas por Status</h3>
+        </div>
+        <div style="padding: 20px;">
             <canvas id="statusChart"></canvas>
         </div>
-        <div class="rp-card">
-            <h3><span>📈</span> Faturamento — últimos 30 dias</h3>
+    </div>
+    <div class="table-wrap">
+        <div class="table-head">
+            <h3 style="margin: 0;">📈 Faturamento — Últimos 30 dias</h3>
+        </div>
+        <div style="padding: 20px;">
             <canvas id="dailyChart"></canvas>
-    </div>
-    </div>
-
-<!--    <div class="invoices-toggle">-->
-<!--        <button id="toggleInvoicesBtn" class="btn-toggle">📋 Ver todas as notas</button>-->
-<!--        <input id="invoiceSearch" class="search-input" placeholder="🔎 Pesquisar por ID ou valor..."/>-->
-<!--    </div>-->
-
-    <div id="invoicesPanel" style="display:none; animation: fadeUp 0.3s ease-out both;">
-        <div class="rp-card" style="margin-bottom: 1.25rem;">
-            <h3><span>📄</span> Notas Fiscais</h3>
-            <div style="overflow-x:auto;">
-                <table class="rp-table">
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Data</th>
-                        <th>ID</th>
-                        <th>Valor</th>
-                    </tr>
-                    </thead>
-                    <tbody id="invoicesList"></tbody>
-                </table>
-            </div>
         </div>
     </div>
+</div>
 
-    <script type="application/json" id="invoicesData">{{invoices_json|safe}}</script>
-
-    <div class="bottom-grid" style="animation: fadeUp 0.5s ease-out 0.3s both;">
-        <div class="rp-card">
-            <h3><span>📉</span> Faturamento por mês (últimos 12 meses)</h3>
+<div class="grid-2" style="margin-bottom: 24px;">
+    <div class="table-wrap">
+        <div class="table-head">
+            <h3 style="margin: 0;">📉 Faturamento por Mês (últimos 12 meses)</h3>
+        </div>
+        <div style="padding: 20px;">
             <canvas id="monthlyChart"></canvas>
         </div>
-        <div class="rp-card summary-card">
-            <h3><span>📋</span> Resumo Anual</h3>
-            <table class="rp-table">
-                <thead>
-                <tr>
-                    <th>Ano</th>
-                    <th>Notas</th>
-                    <th>Total</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for y in yearly %}
-                <tr>
-                    <td><strong>{{ y.year|date:"Y" }}</strong></td>
-                    <td><span class="status-badge blue">{{ y.count }}</span></td>
-                    <td style="font-weight:700; color: var(--primary);">R$ {{ y.total|currency_pt }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
     </div>
-
-    <div class="rp-card" style="margin-top: 1.25rem; animation: fadeUp 0.5s ease-out 0.4s both;">
-        <h3><span>🔄</span> Detalhes das últimas movimentações</h3>
-        <div style="overflow-x:auto;">
-            <table class="rp-table">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Data</th>
-                    <th>Qtd</th>
-                    <th>Total</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for d in daily %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ d.day|slice:":10" }}</td>
-                    <td><span class="status-badge green">{{ d.count }}</span></td>
-                    <td style="font-weight:700;">R$ {{ d.total|currency_pt }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div class="table-wrap">
+        <div class="table-head">
+            <h3 style="margin: 0;">📋 Resumo Anual</h3>
         </div>
+        <table style="width: 100%;">
+            <thead style="background: #FAFBFC;">
+            <tr>
+                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Ano</th>
+                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Notas</th>
+                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for y in yearly %}
+            <tr style="border-bottom: 1px solid var(--border-soft);">
+                <td style="padding: 12px 16px; font-weight: 700; color: var(--text);">{{ y.year|date:"Y" }}</td>
+                <td style="padding: 12px 16px;"><span class="badge badge-blue">{{ y.count }}</span></td>
+                <td style="padding: 12px 16px; font-weight: 700; color: var(--text);">R$ {{ y.total|currency_pt }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
-
 </div>
+
+<div class="table-wrap">
+    <div class="table-head">
+        <h3 style="margin: 0;">🔄 Detalhes das Últimas Movimentações</h3>
+    </div>
+    <table style="width: 100%;">
+        <thead style="background: #FAFBFC;">
+        <tr>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">#</th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Data</th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Qtd</th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in daily %}
+        <tr style="border-bottom: 1px solid var(--border-soft);">
+            <td style="padding: 12px 16px; color: var(--text-sub);">{{ forloop.counter }}</td>
+            <td style="padding: 12px 16px; color: var(--text-sub);">{{ d.day|slice:":10" }}</td>
+            <td style="padding: 12px 16px;"><span class="badge badge-green">{{ d.count }}</span></td>
+            <td style="padding: 12px 16px; font-weight: 700; color: var(--text);">R$ {{ d.total|currency_pt }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script type="application/json" id="invoicesData">{{invoices_json|safe}}</script>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const COLORS = {
-      primary: '#1a9a5c',
-      primaryBg: 'rgba(26,154,92,0.12)',
-      blue: '#3b82f6',
-      blueBg: 'rgba(59,130,246,0.2)',
-      accent: '#e5a617',
-      danger: '#dc4a4a',
-      muted: '#7c8298',
-      border: '#e8eaf0'
+      primary: '#16A34A',
+      primaryBg: 'rgba(22,163,74,0.12)',
+      blue: '#2563EB',
+      blueBg: 'rgba(37,99,235,0.2)',
+      accent: '#B45309',
+      danger: '#DC2626',
+      muted: '#8A94A6',
+      border: '#E2E6EC'
     };
+
+    const defaultOpts = {
+      responsive: true,
+      plugins: {
+        legend: { labels: { font: { family: "'Plus Jakarta Sans'", weight: 600, size: 12 }, padding: 16, usePointStyle: true } },
+        tooltip: {
+          backgroundColor: '#fff', titleColor: '#1A202C', bodyColor: '#1A202C',
+          borderColor: '#E2E6EC', borderWidth: 1, cornerRadius: 12,
+          titleFont: { family: "'Plus Jakarta Sans'", weight: 700 },
+          bodyFont: { family: "'Plus Jakarta Sans'" },
+          padding: 12, boxPadding: 6
+        }
+      }
+    };
+
+    // ===== PIE: Notas por Status =====
+    const statusLabels = {{ status_labels|safe }};
+    const statusData = {{ status_data|safe }};
+    const ctxStatus = document.getElementById('statusChart');
+    if (ctxStatus) {
+      new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: statusLabels,
+          datasets: [{
+            data: statusData,
+            backgroundColor: [COLORS.blue, COLORS.accent, COLORS.danger, COLORS.muted],
+            borderWidth: 0, hoverOffset: 8
+          }]
+        },
+        options: {
+          ...defaultOpts, cutout: '60%',
+          plugins: {
+            ...defaultOpts.plugins,
+            legend: { ...defaultOpts.plugins.legend, position: 'bottom' },
+            tooltip: {
+              ...defaultOpts.plugins.tooltip,
+              callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' notas' }
+            }
+          }
+        }
+      });
+    }
+
+    const dailyRaw = JSON.parse('{{ daily_json|escapejs }}');
+    const dailyLabels = dailyRaw.map(d => d.day.slice(0, 10));
+    const dailyData = dailyRaw.map(d => d.total || 0);
+    const ctxDaily = document.getElementById('dailyChart');
+    if (ctxDaily) {
+      if (!dailyData.length) {
+        ctxDaily.parentElement.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:2rem;">📭 Sem dados para os últimos 30 dias.</div>';
+      } else {
+        new Chart(ctxDaily, {
+          type: 'line',
+          data: {
+            labels: dailyLabels,
+            datasets: [{
+              label: 'Faturamento',
+              data: dailyData,
+              borderColor: COLORS.blue, backgroundColor: COLORS.blueBg,
+              tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: COLORS.blue, borderWidth: 2.5
+            }]
+          },
+          options: {
+            ...defaultOpts,
+            scales: {
+              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
+            }
+          }
+        });
+      }
+    }
+
+    const monthlyRaw = JSON.parse('{{ monthly_json|escapejs }}');
+    const monthlyLabels = monthlyRaw.map(m => {
+      try { return new Date(m.month).toLocaleString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', ''); }
+      catch(e) { return (m.month || '').slice(0, 7); }
+    });
+    const monthlyData = monthlyRaw.map(m => m.total || 0);
+    const ctxMonthly = document.getElementById('monthlyChart');
+    if (ctxMonthly) {
+      if (!monthlyData.length) {
+        ctxMonthly.parentElement.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:2rem;">📭 Sem dados mensais.</div>';
+      } else {
+        new Chart(ctxMonthly, {
+          type: 'line',
+          data: {
+            labels: monthlyLabels,
+            datasets: [{
+              label: 'Faturamento (mensal)',
+              data: monthlyData,
+              borderColor: COLORS.primary, backgroundColor: COLORS.primaryBg,
+              tension: 0.36, fill: true, pointRadius: 4, pointBackgroundColor: COLORS.primary, borderWidth: 2.5
+            }]
+          },
+          options: {
+            ...defaultOpts,
+            scales: {
+              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
+            },
+            plugins: {
+              ...defaultOpts.plugins,
+              tooltip: {
+                ...defaultOpts.plugins.tooltip,
+                callbacks: { label: ctx => 'R$ ' + Number(ctx.parsed.y).toFixed(2) }
+              }
+            }
+          }
+        });
+      }
+    }
+</script>
+{% endblock %}
 
     const defaultOpts = {
       responsive: true,
@@ -263,56 +355,4 @@
         });
       }
     }
-
-    (function() {
-      const toggleBtn = document.getElementById('toggleInvoicesBtn');
-      const panel = document.getElementById('invoicesPanel');
-      const searchInput = document.getElementById('invoiceSearch');
-      const dataEl = document.getElementById('invoicesData');
-      const listEl = document.getElementById('invoicesList');
-      let invoices = [];
-      try { invoices = JSON.parse(dataEl.textContent || '[]'); } catch(e) { invoices = []; }
-
-      function fmt(v) {
-        try { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v)); }
-        catch(e) { return 'R$ ' + v; }
-      }
-
-      function render(items) {
-        if (!listEl) return;
-        if (!items.length) {
-          listEl.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:1.5rem;">Nenhuma nota encontrada.</td></tr>';
-          return;
-        }
-        listEl.innerHTML = items.map((inv, i) => {
-          const dt = inv.created_at ? new Date(inv.created_at).toLocaleDateString('pt-BR') : '';
-          return '<tr><td>' + (i+1) + '</td><td>' + dt + '</td><td><strong>' + inv.invoice_id + '</strong></td><td style="font-weight:700;color:var(--primary);">' + fmt(inv.total) + '</td></tr>';
-        }).join('');
-      }
-
-      function filter(q) {
-        if (!q) return invoices;
-        q = q.toLowerCase();
-        return invoices.filter(inv =>
-          (inv.invoice_id || '').toLowerCase().includes(q) ||
-          (inv.status || '').toLowerCase().includes(q) ||
-          (inv.total || '').toString().includes(q)
-        );
-      }
-
-      toggleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        const hidden = panel.style.display === 'none';
-        panel.style.display = hidden ? 'block' : 'none';
-        this.textContent = hidden ? '🙈 Ocultar notas' : '📋 Ver todas as notas';
-        if (hidden) render(invoices);
-      });
-
-      if (searchInput) {
-        searchInput.addEventListener('input', function() {
-          render(filter(this.value.trim()));
-        });
-      }
-    })();
 </script>
-{% endblock %}

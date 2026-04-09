@@ -2,16 +2,45 @@
 
 {% block title %}Registrar - MEI Monitor{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card p-4 card-mei">
-            <h3 class="card-title mb-3">Registrar MEI</h3>
+{% block content_not_logged %}
+<div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg);">
+    <div style="width: 100%; max-width: 500px; padding: 24px;">
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 32px; box-shadow: var(--shadow-sm);">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <div style="width: 50px; height: 50px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-family: var(--font-display); color: white; font-size: 24px; font-weight: 800;">ME</div>
+                <h1 style="font-size: 24px; margin: 0; color: var(--text);">Registrar no MEI Monitor</h1>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Crie sua conta para começar</p>
+            </div>
+
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Registrar</button>
+
+                {% for field in form %}
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in field.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Registrar
+                </button>
             </form>
+
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                    Já tem acesso? <a href="{% url 'login' %}" style="color: var(--accent-2);">Faça login</a>
+                </p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px; font-size: 12px; color: var(--text-muted);">
+            &copy; 2026 MEI Monitor. Todos os direitos reservados.
         </div>
     </div>
 </div>

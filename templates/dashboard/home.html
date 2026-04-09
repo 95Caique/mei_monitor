@@ -3,294 +3,234 @@
 
 {% block title %}Dashboard - MEI Monitor{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="dash-container">
-    <div class="balance-hero">
-        <p class="label">Valor Emitido</p>
 
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <span class="amount" id="balanceAmount">
-                    R$ {{ total_invoices_sum|currency_pt }}
-                </span>
-
-                <button type="button" class="toggle-eye ms-2" id="eyeBtn">
-                    <i class="fa-regular fa-eye"></i>
-                </button>
+<div class="metrics-grid">
+    {% if mei_limit_info %}
+    <div class="metric-card {% if mei_limit_info.alert_level == 'danger' %}c-red{% elif mei_limit_info.alert_level == 'warning' %}c-yellow{% else %}c-blue{% endif %}">
+        <div class="metric-header">
+            <div class="metric-icon">
+                {% if mei_limit_info.alert_level == 'danger' %}<i class="fas fa-exclamation-circle"></i>
+                {% elif mei_limit_info.alert_level == 'warning' %}<i class="fas fa-triangle-exclamation"></i>
+                {% else %}<i class="fas fa-chart-pie"></i>{% endif %}
             </div>
-
+            <span class="metric-delta {% if mei_limit_info.percentage > 80 %}up{% else %}down{% endif %}">
+                {{ mei_limit_info.percentage|floatformat:1 }}%
+            </span>
         </div>
-
-        <div class="meta">
-            <span>{{ empresa.razao_social }}</span>
-            <span id="empresaCnpj">CNPJ {{ empresa.cnpj }}</span>
+        <div style="display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 12px;">
+            <div class="metric-value" id="limitAmount">R$ {{ annual_total|currency_pt }}</div>
+            <button type="button" class="icon-btn" id="eyeLimitBtn" aria-label="Toggle visibility" style="width: 28px; height: 28px; flex-shrink: 0; font-size: 14px;">
+                <i class="fa-regular fa-eye"></i>
+            </button>
         </div>
+        <div class="metric-label">Limite MEI {{ mei_limit_info.year }}<br>(R$ {{ mei_limit_info.limit|currency_pt }})</div>
+    </div>
+    {% endif %}
+
+    <div class="metric-card c-green">
+        <div class="metric-header">
+            <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+<!--            <span class="metric-delta up">↑ 0%</span>-->
+        </div>
+        <div class="metric-value">{{ empresa.invoices.count }}</div>
+        <div class="metric-label">Notas Emitidas</div>
     </div>
 
-    <!-- AÇÕES RÁPIDAS -->
-    <div class="quick-actions anim-1">
-        <a class="quick-action-btn" href="{% url 'create_invoice' %}">
-            <div class="quick-action-icon"><i class="fa-solid fa-dollar-sign"></i></div>
-            <span class="quick-action-label">Criar Nota</span>
-        </a>
-        <a class="quick-action-btn" href="{% url 'manage_invoices' %}">
-            <div class="quick-action-icon"><i class="fa-solid fa-book"></i></div>
-            <span class="quick-action-label">Gerenciar</span>
-        </a>
-        <a class="quick-action-btn" href="/telegram/profile/">
-            <div class="quick-action-icon"><i class="fa-brands fa-telegram"></i></div>
-            <span class="quick-action-label">Telegram</span>
-        </a>
-        <a class="quick-action-btn" href="{% url 'reports' %}">
-            <div class="quick-action-icon"><i class="fa-solid fa-chart-column"></i></div>
-            <span class="quick-action-label">Relatórios</span>
-        </a>
-        <a class="quick-action-btn" href="#">
-            <div class="quick-action-icon"><i class="fa-solid fa-gears"></i></div>
-            <span class="quick-action-label">Config</span>
-        </a>
+    <div class="metric-card c-blue">
+        <div class="metric-header">
+            <div class="metric-icon"><i class="fas fa-file-invoice"></i></div>
+        </div>
+        <div class="metric-value">{{ empresa.invoices.count }}</div>
+        <div class="metric-label">Total de Notas</div>
     </div>
 
-    <!-- CARDS ESTATÍSTICAS -->
-    <div class="stat-grid anim-2{% if mei_limit_info %} stat-grid-three{% else %} stat-grid-two{% endif %}">
-        {% if mei_limit_info %}
-        <div class="glass-card stat-card mei-limit">
-            <div class="stat-header">
-                <span class="stat-label">Limite MEI {{ mei_limit_info.year }}</span>
-                <span class="stat-icon {% if mei_limit_info.alert_level == 'danger' %}red
-                {% elif mei_limit_info.alert_level == 'warning' %}orange
-                {% elif mei_limit_info.alert_level == 'info' %}blue
-                {% else %}green{% endif %}">
-                  {% if mei_limit_info.alert_level == 'danger' %}⚠️
-                  {% elif mei_limit_info.alert_level == 'warning' %}⚡
-                  {% elif mei_limit_info.alert_level == 'info' %}📊
-                  {% else %}✅{% endif %}
-        </span>
-            </div>
-            <div class="stat-value">{{ mei_limit_info.percentage|floatformat:1 }}%</div>
-            <div class="stat-change {% if mei_limit_info.alert_level == 'danger' %}danger
-            {% elif mei_limit_info.alert_level == 'warning' %}warning
-            {% elif mei_limit_info.alert_level == 'info' %}info
-            {% else %}success{% endif %}">
-                {{ mei_limit_info.alert_message }}
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill"
-                     style="width: {{ mei_limit_info.percentage|floatformat:1 }}%; background-color: {% if mei_limit_info.alert_level == 'danger' %}#dc3545{% elif mei_limit_info.alert_level == 'warning' %}#ffc107{% elif mei_limit_info.alert_level == 'info' %}#17a2b8{% else %}#28a745{% endif %};"></div>
-            </div>
-            <small class="text-muted">R$ {{ annual_total|currency_pt }} de
-                R$ {{ mei_limit_info.limit|currency_pt }}</small>
+    <div class="metric-card c-yellow">
+        <div class="metric-header">
+            <div class="metric-icon"><i class="fas fa-info-circle"></i></div>
         </div>
-        {% endif %}
-
-        <div class="glass-card stat-card">
-            <div class="stat-header">
-                <span class="stat-label">Total Faturado</span>
-                <span class="stat-icon green">📈</span>
-            </div>
-            <div class="stat-value">R$ {{ total_invoices_sum|currency_pt }}</div>
-            <div class="stat-change up">Este período</div>
-        </div>
-        <div class="glass-card stat-card expense">
-            <div class="stat-header">
-                <span class="stat-label">Notas Emitidas</span>
-                <span class="stat-icon red">📋</span>
-            </div>
-            <div class="stat-value">{{ empresa.invoices.count }}</div>
-            <div class="stat-change">Total de notas</div>
-        </div>
-        <!--    <div class="glass-card stat-card invest">-->
-        <!--      <div class="stat-header">-->
-        <!--        <span class="stat-label">Status MEI</span>-->
-        <!--        <span class="stat-icon gold">✅</span>-->
-        <!--      </div>-->
-        <!--      <div class="stat-value">{{ empresa.status }}</div>-->
-        <!--      <div class="stat-change">{{ empresa.tipo }}</div>-->
-        <!--    </div>-->
+        <div class="metric-value">{{ empresa.status }}</div>
+        <div class="metric-label">Status</div>
     </div>
+</div>
 
-    <!-- GRID PRINCIPAL -->
-    <div class="dash">
-           <div class="glass-card p-4 mb-3 card-mei-custom anim-2">
-                <h5 style="font-weight:700; margin-bottom:1rem;">MEI Info</h5>
-                <p><strong>{{ empresa.razao_social }}</strong></p>
-                <p class="text-muted" style="font-size:0.85rem;">CNPJ: {{ empresa.cnpj }}</p>
-                <p style="font-size:0.85rem;">
-                    <span class="badge bg-success">{{ empresa.tipo }}</span>
-                    {% if not empresa.ativa %}<span class="badge bg-secondary ms-1">Inativa</span>{% endif %}
-                </p>
-                <p class="text-muted" style="font-size:0.8rem; margin-top:0.75rem;">Última verificação: {{ empresa.last_checked }}</p>
+<div class="grid-2">
+    <div>
+        <div class="table-wrap" style="margin-bottom: 24px;">
+            <div class="table-head">
+                <h3>Informações da Empresa</h3>
             </div>
-        <div>
-            <!-- ÚLTIMAS NOTAS -->
-            <div class="glass-card p-4 mb-3 anim-2">
-                <div class="section-header">
-                    <h5>Últimas Notas</h5>
-<!--                    <a href="#">Ver todas</a>-->
+            <div style="padding: 20px;">
+                <!-- Header com Razão Social e CNPJ -->
+                <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                    <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -.4px; word-break: break-word;">
+                        {{ empresa.razao_social }}
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 13px; margin: 0; word-break: break-word;">CNPJ: {{ empresa.cnpj }}</p>
                 </div>
-                {% if empresa.invoices.exists %}
-                {% for inv in empresa.invoices.all|dictsortreversed:"created_at"|slice:":10" %}
-                <div class="tx-item">
-                    <div class="tx-icon-wrap">📄</div>
-                    <div class="tx-info">
-                        <div class="tx-name">{{ inv.invoice_id }}</div>
-                        <div class="tx-meta">{{ inv.status|status_pt }} · {{ inv.created_at|date:"d/m/Y H:i" }}</div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Tipo</div>
+                        <span class="badge badge-blue">{{ empresa.tipo }}</span>
                     </div>
-                    <div class="tx-value positive">R$ {{ inv.total|currency_pt }}</div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Última Verificação</div>
+                        <div style="font-size: 13px; color: var(--text); font-weight: 500;">{{ empresa.last_checked|date:"d/m/Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <div class="table-head">
+                <h3>Últimas Notas Fiscais</h3>
+            </div>
+            {% if empresa.invoices.exists %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in empresa.invoices.all|dictsortreversed:"created_at"|slice:":5" %}
+                    <tr>
+                        <td class="td-name">#{{ inv.invoice_id }}</td>
+                        <td>{{ inv.created_at|date:"d/m/Y" }}</td>
+                        <td class="td-valor">R$ {{ inv.total|currency_pt }}</td>
+                        <td>
+                            {% if inv.status == 'ISSUED' %}
+                                <span class="badge badge-green">Emitida</span>
+                            {% elif inv.status == 'DRAFT' %}
+                                <span class="badge badge-yellow">Rascunho</span>
+                            {% elif inv.status == 'CANCELLED' %}
+                                <span class="badge badge-red">Cancelada</span>
+                            {% elif inv.status == 'Paga' %}
+                                <span class="badge badge-blue">Paga</span>
+                            {% else %}
+                                <span class="badge badge-gray">{{ inv.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+                Nenhuma nota fiscal emitida ainda.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="table-wrap">
+            <div class="table-head">
+                <h3>Alertas Recentes</h3>
+            </div>
+            {% if alerts_page and alerts_page.object_list %}
+            <div style="max-height: 500px; overflow-y: auto;">
+                {% for alert in alerts_page.object_list %}
+                <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-soft); display: flex; gap: 12px; align-items: flex-start;">
+                    {% if alert.level == 'INFO' %}
+                        <i class="fas fa-info-circle" style="color: var(--blue); margin-top: 2px;"></i>
+                    {% elif alert.level == 'WARNING' %}
+                        <i class="fas fa-triangle-exclamation" style="color: var(--yellow); margin-top: 2px;"></i>
+                    {% elif alert.level == 'CRITICAL' %}
+                        <i class="fas fa-circle-exclamation" style="color: var(--red); margin-top: 2px;"></i>
+                    {% endif %}
+                    <div style="flex: 1;">
+                        <div style="font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 4px;">{{ alert.message }}</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">{{ alert.created_at|date:"d/m/Y H:i" }}</div>
+                    </div>
                 </div>
                 {% endfor %}
-                {% else %}
-                <p class="text-muted">Sem notas lançadas.</p>
-                {% endif %}
             </div>
-
-            <!-- ALERTAS -->
-            <div class="glass-card p-4 mb-3 anim-3">
-                <div class="section-header">
-                    <h5>Alertas recentes</h5>
-                    <div>
-                        <!--            <select id="alertsFilter" class="form-select form-select-sm d-inline-block
-                                            me-2" style="width:auto;">-->
-                        <!--              <option value="ALL">Todos</option>-->
-                        <!--              <option value="INFO">Info</option>-->
-                        <!--              <option value="WARNING">Atenção</option>-->
-                        <!--              <option value="CRITICAL">Crítico</option>-->
-                        <!--            </select>-->
-                        <button id="openAlertsModalBtn" class="btn btn-sm btn-outline-secondary">Ver todos</button>
-                    </div>
+            <div class="pagination">
+                <div class="page-info">
+                    {% if alerts_page.paginator.count %}
+<!--                        Mostrando {{ alerts_page.start_index }} - {{ alerts_page.end_index }} de {{ alerts_page.paginator.count }}-->
+                    {% endif %}
                 </div>
-                {% if alerts_page and alerts_page.object_list %}
-                <div class="alerts-list" style="max-height:320px; overflow:auto;">
-                    <ul class="list-group list-group-flush">
-                        {% for a in alerts_page.object_list %}
-                        <li class="list-group-item alert-item">
-                            <strong>[{{ a.level|level_pt }}]</strong> {{ a.message }}
-                            <small class="text-muted">({{ a.created_at|date:"d/m/Y H:i" }})</small>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <nav aria-label="Paginação" class="mt-3">
-                    <ul class="pagination justify-content-center">
-                        {% if alerts_page.has_previous %}
-                        <li class="page-item"><a class="page-link" href="?page={{ alerts_page.previous_page_number }}">&laquo;</a>
-                        </li>
+                <div class="page-buttons">
+                    {% if alerts_page.has_previous %}
+                        <a href="?page=1" class="page-btn">← Primeira</a>
+                        <a href="?page={{ alerts_page.previous_page_number }}" class="page-btn">Anterior</a>
+                    {% endif %}
+
+                    {% for p in alerts_page.paginator.page_range|slice:":5" %}
+                        {% if p == alerts_page.number %}
+                            <button class="page-btn active">{{ p }}</button>
                         {% else %}
-                        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                            <a href="?page={{ p }}" class="page-btn">{{ p }}</a>
                         {% endif %}
-                        {% for p in alerts_compact_pages %}
-                        {% if p == '...' %}
-                        <li class="page-item disabled"><span class="page-link">…</span></li>
-                        {% else %}
-                        <li class="page-item {% if p == alerts_page.number %}active{% endif %}">
-                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-                        </li>
-                        {% endif %}
-                        {% endfor %}
-                        {% if alerts_page.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ alerts_page.next_page_number }}">&raquo;</a>
-                        </li>
-                        {% else %}
-                        <li class="page-item disabled"><
-                            span class="page-link">&raquo;</span>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% else %}
-                <p class="text-muted">Sem alertas recentes.</p>
-                {% endif %}
-            </div>
-        </div>
+                    {% endfor %}
 
-        <!-- SIDEBAR -->
-        <div>
-
-            <!--      <div class="glass-card p-4 mb-3 anim-3">-->
-            <!--        <h6 style="font-weight:700; margin-bottom:1rem;">Ações rápidas</h6>-->
-            <!--        <a class="btn btn-outline-brand w-100 mb-2" href="{% url 'create_invoice' %}">📄 Criar Nota</a>-->
-            <!--        <a class="btn btn-outline-brand w-100 mb-2" href="/telegram/profile/">💬 Configurar Telegram</a>-->
-            <!--        <a class="btn btn-outline-brand w-100 mb-2" href="{% url 'reports' %}">📊 Ver Relatórios</a>-->
-            <!--      </div>-->
-            <!--      <div class="glass-card p-4 anim-3">-->
-            <!--        <h6 style="font-weight:700; margin-bottom:0.75rem;">🔔 Notificações</h6>-->
-            <!--&lt;!&ndash;        <p class="text-muted" style="font-size:0.85rem;">As notificações são enviadas automaticamente quando há movimentações nas notas.</p>&ndash;&gt;-->
-            <!--      </div>-->
-        </div>
-    </div>
-
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/home.js' %}"></script>
-
-<!-- Alerts Modal -->
-<div class="modal fade" id="alertsModal" tabindex="-1" aria-labelledby="alertsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="alertsModalLabel">Todos os Alertas</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                        id="alertsModalClose"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-muted">Filtrar por nível:</small>
-                        <select id="alertsFilterModal" class="form-select form-select-sm d-inline-block ms-2"
-                                style="width:auto;">
-                            <option value="ALL">Todos</option>
-                            <option value="INFO">Info</option>
-                            <option value="WARNING">Atenção</option>
-                            <option value="CRITICAL">Crítico</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Data</th>
-                            <th>Nível</th>
-                            <th>Mensagem</th>
-                        </tr>
-                        </thead>
-                        <tbody id="alertsModalList">
-                        </tbody>
-                    </table>
+                    {% if alerts_page.has_next %}
+                        <a href="?page={{ alerts_page.next_page_number }}" class="page-btn">Próxima</a>
+                        <a href="?page={{ alerts_page.paginator.num_pages }}" class="page-btn">Última →</a>
+                    {% endif %}
                 </div>
             </div>
-            <div class="modal-footer">
-                <nav aria-label="Paginação">
-                    <ul id="alertsModalPagination" class="pagination mb-0">
-                        {% for item in alerts_pagination_items %}
-                        {% if item.type == 'dots' %}
-                        <li class="page-item disabled"><span class="page-link">…</span></li>
-                        {% else %}
-                        <li class="page-item {% if item.disabled %}disabled{% endif %} {% if item.active %}active{% endif %}">
-                            {% if item.page %}
-                            <a class="page-link" href="?page={{ item.page }}">{{ item.label }}</a>
-                            {% else %}
-                            <span class="page-link">{{ item.label }}</span>
-                            {% endif %}
-                        </li>
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </nav>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            {% else %}
+            <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+                Sem alertas recentes.
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<script type="text/plain" id="alertsAllData">{{ alerts_all_json|safe }}</script>
-<script src="{% static 'js/alerts_modal.js' %}"></script>
+<script>
+// Eye button toggle para "Valor Emitido"
+document.addEventListener('DOMContentLoaded', function() {
+    const eyeBtn = document.getElementById('eyeBtn');
+    const eyeLimitBtn = document.getElementById('eyeLimitBtn');
+
+    if (eyeBtn) {
+        eyeBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            const amount = document.getElementById('balanceAmount');
+
+            if (icon.classList.contains('fa-eye')) {
+                // Mudar para olho fechado
+                icon.classList.remove('fa-regular', 'fa-eye');
+                icon.classList.add('fa-solid', 'fa-eye-slash');
+                amount.style.filter = 'blur(8px)';
+                amount.style.transition = 'filter 0.3s ease';
+            } else {
+                // Mudar para olho aberto
+                icon.classList.remove('fa-solid', 'fa-eye-slash');
+                icon.classList.add('fa-regular', 'fa-eye');
+                amount.style.filter = 'blur(0)';
+            }
+        });
+    }
+
+    if (eyeLimitBtn) {
+        eyeLimitBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            const amount = document.getElementById('limitAmount');
+
+            if (icon.classList.contains('fa-eye')) {
+                // Mudar para olho fechado
+                icon.classList.remove('fa-regular', 'fa-eye');
+                icon.classList.add('fa-solid', 'fa-eye-slash');
+                amount.style.filter = 'blur(8px)';
+                amount.style.transition = 'filter 0.3s ease';
+            } else {
+                // Mudar para olho aberto
+                icon.classList.remove('fa-solid', 'fa-eye-slash');
+                icon.classList.add('fa-regular', 'fa-eye');
+                amount.style.filter = 'blur(0)';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
+

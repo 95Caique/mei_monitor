@@ -5,259 +5,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}MEI Monitor{% endblock %}</title>
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="/static/css/styles.css" rel="stylesheet">
-    <link href="/static/css/notifications.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="{% static 'icone-de-moeda.png' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}?v=1.0" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand" href="/">MEI Monitor</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<body>
+
+{% if request.user.is_authenticated %}
+<div class="mobile-overlay" id="mobile-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-mark">ME</div>
+        <span class="logo-text">MEI<span>Monitor</span></span>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                {% if request.user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'manage_invoices' %}">Notas</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'reports' %}">Relatórios</a></li>
-                <li class="nav-item"><a class="nav-link" href="/telegram/profile/">Telegram</a></li>
-                <!-- Sininho de Notificações, rever onde por depois ou se devo remover -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        🔔 Notificações
-                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                            0
-                        </span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
-                        <li class="dropdown-header d-flex justify-content-between">
-                            <span>Notificações Recentes</span>
-                            <button class="btn btn-sm btn-link p-0" onclick="markAllRead()" style="font-size: 0.8rem;">Marcar todas como lidas</button>
-                        </li>
-                        <div id="notificationsList">
-                            <li class="dropdown-item text-center text-muted py-3">
-                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                                Carregando...
-                            </li>
-                        </div>
-                        <li><hr class="dropdown-divider"></li>
-                        <li class="dropdown-item text-center">
-                            <a href="/" class="text-decoration-none">Ver todas as notificações</a>
-                        </li>
-                    </ul>
-                </li>
-                {% if request.user.is_superuser %}
-                <li class="nav-item"><a class="nav-link" href="/admin-panel/">Admin Panel</a></li>
-                {% endif %}
-                <li class="nav-item"><a class="nav-link" href="/accounts/logout/">Sair</a></li>
-                {% else %}
-                <li class="nav-item"><a class="nav-link" href="/accounts/login/">Entrar</a></li>
-                {% endif %}
-            </ul>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+
+        <a href="{% url 'dashboard' %}" class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="9" rx="1"/>
+                    <rect x="14" y="3" width="7" height="5" rx="1"/>
+                    <rect x="14" y="12" width="7" height="9" rx="1"/>
+                    <rect x="3" y="16" width="7" height="5" rx="1"/>
+                </svg>
+            </span>
+            <span class="nav-label">Dashboard</span>
+        </a>
+
+        <a href="{% url 'manage_invoices' %}" class="nav-item{% if request.resolver_match.url_name == 'manage_invoices' %} active{% endif %}">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+            </span>
+            <span class="nav-label">Notas</span>
+        </a>
+
+        <a href="{% url 'reports' %}" class="nav-item{% if request.resolver_match.url_name == 'reports' %} active{% endif %}">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+            </span>
+            <span class="nav-label">Relatórios</span>
+        </a>
+
+        <div class="nav-section-label">Integrações</div>
+
+        <a href="/telegram/profile/" class="nav-item{% if 'telegram' in request.path %} active{% endif %}">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </span>
+            <span class="nav-label">Telegram</span>
+        </a>
+
+        {% if request.user.is_superuser %}
+        <div class="nav-section-label">Administração</div>
+
+        <a href="/admin-panel/" class="nav-item{% if 'admin-panel' in request.path %} active{% endif %}">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </span>
+            <span class="nav-label">Admin Panel</span>
+        </a>
+        {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="/accounts/logout/" class="nav-item" style="color:var(--red)">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </span>
+            <span class="nav-label">Sair</span>
+        </a>
+    </div>
+</aside>
+
+<div class="main" id="main">
+    <div class="mobile-bar">
+        <button class="mobile-toggle" onclick="openMobileMenu()" aria-label="Abrir menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+        <div class="logo-mark">ME</div>
+        <span style="font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap;">MEI<span style="color: var(--accent-2);">Monitor</span></span>
+    </div>
+
+    <header class="topbar">
+        <div class="topbar-breadcrumb" id="topbar-breadcrumb">
+            Sistema
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <strong>Dashboard</strong>
         </div>
-    </div>
-</nav>
+        <div class="topbar-spacer"></div>
 
-<div class="container py-4">
-    {% if messages %}
-    <div class="mb-3">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
+<!--        <div class="topbar-search">-->
+<!--            <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">-->
+<!--                <circle cx="11" cy="11" r="8"/>-->
+<!--                <line x1="21" y1="21" x2="16.65" y2="16.65"/>-->
+<!--            </svg>-->
+<!--            <input type="text" placeholder="Buscar..." id="globalSearch">-->
+<!--        </div>-->
 
-    {% block content %}{% endblock %}
+        <div class="topbar-actions">
+            <!-- Notification bell -->
+            <button class="icon-btn notif-dot" id="notificationsBtn" aria-label="Notificações">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </button>
+
+            <!-- User chip -->
+            <div class="user-chip" id="userChip" style="cursor:pointer;">
+                <div class="avatar">{{ request.user.username|make_list|first|upper }}</div>
+                <span class="user-chip-name">{{ request.user.username }}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        {% if messages %}
+        <div class="cf-messages">
+            {% for message in messages %}
+            <div class="cf-alert {% if message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% elif message.tags == 'error' %}error{% else %}info{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px;">
+        &copy; MEI Monitor &middot; Desenvolvido por Caique de Souza
+    </footer>
 </div>
 
-<footer class="text-center py-4">
-    <small class="text-muted">© MEI Monitor | Desenvolvido por Caique de Souza </small>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- JavaScript para o Sininho de Notificações -->
-<script>
-// Sistema de notificações em tempo real
-class NotificationSystem {
-    constructor() {
-        this.lastCheck = localStorage.getItem('lastNotificationCheck') || new Date().toISOString();
-        this.badge = document.getElementById('notificationBadge');
-        this.list = document.getElementById('notificationsList');
-        this.pollInterval = 30000; // 30 segundos
-        this.init();
-    }
-
-    init() {
-        // Carregar notificações iniciais
-        this.loadNotifications();
-
-        // Polling a cada 30 segundos
-        setInterval(() => {
-            this.loadNotifications(true);
-        }, this.pollInterval);
-
-        // Carregar quando o dropdown é aberto
-        document.getElementById('notificationsDropdown').addEventListener('click', () => {
-            this.loadNotifications();
-        });
-    }
-
-    async loadNotifications(background = false) {
-        try {
-            const response = await fetch(`/api/notifications/?since=${this.lastCheck}`);
-            const data = await response.json();
-
-            this.updateBadge(data.count);
-            this.updateList(data.alerts);
-
-            // Atualizar timestamp do último check apenas se não for background
-            if (!background && data.alerts.length > 0) {
-                this.lastCheck = data.timestamp;
-                localStorage.setItem('lastNotificationCheck', this.lastCheck);
-            }
-
-            // Se há novas notificações, mostrar uma pequena animação
-            if (background && data.count > 0) {
-                this.animateBell();
-            }
-
-        } catch (error) {
-            console.error('Erro ao carregar notificações:', error);
-            if (!background) {
-                this.list.innerHTML = `
-                    <li class="dropdown-item text-center text-danger py-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Erro ao carregar notificações
-                    </li>
-                `;
-            }
-        }
-    }
-
-    updateBadge(count) {
-        if (count > 0) {
-            this.badge.textContent = count > 99 ? '99+' : count;
-            this.badge.style.display = 'inline-block';
-        } else {
-            this.badge.style.display = 'none';
-        }
-    }
-
-    updateList(alerts) {
-        if (alerts.length === 0) {
-            this.list.innerHTML = `
-                <li class="dropdown-item text-center text-muted py-3">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
-                    Nenhuma notificação recente
-                </li>
-            `;
-            return;
-        }
-
-        this.list.innerHTML = alerts.map(alert => {
-            const icon = this.getAlertIcon(alert.level);
-            const color = this.getAlertColor(alert.level);
-            const date = new Date(alert.created_at);
-            const timeAgo = this.timeAgo(date);
-
-            return `
-                <li class="dropdown-item notification-item py-2 border-bottom" data-alert-id="${alert.id}">
-                    <div class="d-flex align-items-start">
-                        <div class="me-2" style="color: ${color}; font-size: 1.1rem;">
-                            ${icon}
-                        </div>
-                        <div class="flex-grow-1" style="min-width: 0;">
-                            <div class="fw-bold text-${color} mb-1" style="font-size: 0.8rem;">
-                                ${alert.level_display}
-                            </div>
-                            <div class="notification-message text-truncate mb-1" style="font-size: 0.9rem;">
-                                ${alert.message}
-                            </div>
-                            <div class="text-muted" style="font-size: 0.75rem;">
-                                ${timeAgo}
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            `;
-        }).join('');
-    }
-
-    getAlertIcon(level) {
-        const icons = {
-            'INFO': '💡',
-            'WARNING': '⚠️',
-            'CRITICAL': '🚨'
-        };
-        return icons[level] || '📢';
-    }
-
-    getAlertColor(level) {
-        const colors = {
-            'INFO': 'info',
-            'WARNING': 'warning',
-            'CRITICAL': 'danger'
-        };
-        return colors[level] || 'secondary';
-    }
-
-    timeAgo(date) {
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-
-        if (diffMins < 1) return 'Agora há pouco';
-        if (diffMins < 60) return `${diffMins} min atrás`;
-        if (diffHours < 24) return `${diffHours}h atrás`;
-        if (diffDays < 7) return `${diffDays}d atrás`;
-        return date.toLocaleDateString('pt-BR');
-    }
-
-    animateBell() {
-        const bellElement = document.getElementById('notificationsDropdown');
-        bellElement.style.animation = 'bell-shake 0.5s ease-in-out';
-        setTimeout(() => {
-            bellElement.style.animation = '';
-        }, 500);
-    }
-
-    markAllAsRead() {
-        this.lastCheck = new Date().toISOString();
-        localStorage.setItem('lastNotificationCheck', this.lastCheck);
-        this.updateBadge(0);
-        this.loadNotifications();
-    }
-}
-
-// Função global para marcar todas como lidas
-function markAllRead() {
-    if (window.notificationSystem) {
-        window.notificationSystem.markAllAsRead();
-    }
-}
-
-// Inicializar sistema apenas para usuários autenticados
-{% if request.user.is_authenticated %}
-document.addEventListener('DOMContentLoaded', () => {
-    window.notificationSystem = new NotificationSystem();
-});
+{% else %}
+<div class="main no-sidebar" id="main">
+    <div class="content">
+        {% if messages %}
+        <div class="cf-messages">
+            {% for message in messages %}
+            <div class="cf-alert {% if message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% elif message.tags == 'error' %}error{% else %}info{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content_not_logged %}{% endblock %}
+    </div>
+</div>
 {% endif %}
-</script>
 
-<script src="/static/js/utils.js"></script>
-<script src="/static/js/format-cnpj.js"></script>
-
+<script src="{% static 'js/design-system.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/format-cnpj.js' %}"></script>
 {% block extra_js %}{% endblock %}
+
+<script>
+// Persistência do estado da sidebar - APENAS mobile
+(function() {
+    try {
+        // Não usar localStorage para desktop - sempre expandido
+        if (window.innerWidth <= 768) {
+            const state = localStorage.getItem('sidebarCollapsed');
+            if (state === 'true') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('main').classList.add('shifted');
+            }
+        }
+    } catch(e) {}
+})();
+
+// Salvar estado ao colapsar - APENAS mobile
+const originalToggle = toggleSidebar;
+window.toggleSidebar = function() {
+    originalToggle();
+    try {
+        if (window.innerWidth <= 768) {
+            localStorage.setItem('sidebarCollapsed',
+                document.getElementById('sidebar').classList.contains('collapsed') ? 'true' : 'false');
+        }
+    } catch(e) {}
+};
+
+// Fechar mobile ao redimensionar
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        closeMobileMenu();
+        // Sempre remover collapsed em desktop
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+        if (sidebar && main) {
+            sidebar.classList.remove('collapsed');
+            main.classList.remove('shifted');
+        }
+    }
+});
+
+// Alias para compatibilidade
+function openMobile() { openMobileMenu(); }
+function closeMobile() { closeMobileMenu(); }
+</script>
 </body>
 </html>

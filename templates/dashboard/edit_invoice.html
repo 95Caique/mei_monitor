@@ -4,8 +4,6 @@
 {% block title %}Editar Nota - MEI Monitor{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
-<link rel="stylesheet" href="{% static 'css/action-links.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -107,7 +105,7 @@
         <h4>🔄 Outras Ações</h4>
         <div class="d-grid gap-2">
           {% if invoice.status != 'CANCELLED' %}
-          <a href="{% url 'cancel_invoice' invoice.id %}" class="action-link action-cancel">
+          <a href="{% url 'cancel_invoice' invoice.id %}?page={{ request.GET.page|default:1 }}" class="action-link action-cancel">
             ❌ Cancelar Nota
           </a>
           {% endif %}

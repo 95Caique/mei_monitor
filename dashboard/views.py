@@ -492,7 +492,8 @@ def edit_invoice(request, invoice_id):
 
 @login_required
 def cancel_invoice(request, invoice_id):
-    """View para cancelar uma nota"""
+    from django.urls import reverse
+    
     empresa = Empresa.objects.filter(user=request.user).first()
     if not empresa:
         return redirect('dashboard')
@@ -504,13 +505,14 @@ def cancel_invoice(request, invoice_id):
         messages.error(request, 'Nota não encontrada.')
         return redirect('manage_invoices')
 
+    page = request.GET.get('page') or request.POST.get('page', 1)
+
     if request.method == 'POST':
         if invoice.status == 'CANCELLED':
             from django.contrib import messages
             messages.warning(request, 'Esta nota já está cancelada.')
-            return redirect('manage_invoices')
+            return redirect(f"{reverse('manage_invoices')}?page={page}")
 
-        # Cancelar a nota
         old_status = invoice.status
         invoice.status = 'CANCELLED'
 
@@ -526,7 +528,7 @@ def cancel_invoice(request, invoice_id):
             from django.contrib import messages
             messages.error(request, f'Erro ao cancelar nota: {str(e)}')
 
-        return redirect('manage_invoices')
+        return redirect(f"{reverse('manage_invoices')}?page={page}")
 
     context = {
         'invoice': invoice,

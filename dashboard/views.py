@@ -493,6 +493,7 @@ def edit_invoice(request, invoice_id):
 @login_required
 def cancel_invoice(request, invoice_id):
     from django.urls import reverse
+    from logs.services import log_invoice_action
     
     empresa = Empresa.objects.filter(user=request.user).first()
     if not empresa:
@@ -511,6 +512,13 @@ def cancel_invoice(request, invoice_id):
         if invoice.status == 'CANCELLED':
             from django.contrib import messages
             messages.warning(request, 'Esta nota já está cancelada.')
+            # Log: tentativa de cancelar nota já cancelada
+            log_invoice_action(
+                request=request,
+                user=request.user,
+                invoice=invoice,
+                action_type='CANCEL'
+            )
             return redirect(f"{reverse('manage_invoices')}?page={page}")
 
         old_status = invoice.status
@@ -522,11 +530,31 @@ def cancel_invoice(request, invoice_id):
 
             from django.contrib import messages
             messages.success(request, f'Nota {invoice.invoice_id} cancelada com sucesso!')
-
+            
+            # Log: cancelamento de nota com sucesso
+            log_invoice_action(
+                request=request,
+                user=request.user,
+                invoice=invoice,
+                action_type='CANCEL',
+                old_values={'status': old_status},
+                new_values={'status': invoice.status}
+            )
 
         except Exception as e:
             from django.contrib import messages
             messages.error(request, f'Erro ao cancelar nota: {str(e)}')
+            
+            # Log: erro ao cancelar nota
+            from logs.services import log_error
+            log_error(
+                request=request,
+                user=request.user,
+                title='Erro ao cancelar nota fiscal',
+                description=f'Falha ao cancelar nota {invoice.invoice_id}',
+                module='invoice',
+                exception=e
+            )
 
         return redirect(f"{reverse('manage_invoices')}?page={page}")
 

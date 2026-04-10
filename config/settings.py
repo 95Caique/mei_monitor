@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'telegram_bot',
     'django_crontab',
     'adminpanel',
+    'logs',
 ]
 
 MIDDLEWARE = [

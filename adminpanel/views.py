@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
+from django.db.models import Q
 from monitor.models import Empresa
+from logs.models import SystemLog
 from .forms import CreateUserAndEmpresaForm, EditUserForm
 
 User = get_user_model()
@@ -73,3 +76,41 @@ def user_toggle_active(request, user_id):
     return redirect('adminpanel:users_list')
 
 
+@superuser_required
+def logs_list(request):
+    logs = SystemLog.objects.select_related('user')
+    q = request.GET.get('q', '').strip()
+    level = request.GET.get('level', '').strip()
+    action = request.GET.get('action', '').strip()
+    module = request.GET.get('module', '').strip()
+
+    if level:
+        logs = logs.filter(level=level)
+    if action:
+        logs = logs.filter(action_type=action)
+    if module:
+        logs = logs.filter(module__icontains=module)
+    if q:
+        logs = logs.filter(
+            Q(title__icontains=q) |
+            Q(description__icontains=q) |
+            Q(module__icontains=q) |
+            Q(user__username__icontains=q) |
+            Q(user__email__icontains=q)
+        )
+
+    paginator = Paginator(logs, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'page_obj': page_obj,
+        'levels': SystemLog.LOG_LEVELS,
+        'actions': SystemLog.ACTION_TYPES,
+        'filters': {
+            'q': q,
+            'level': level,
+            'action': action,
+            'module': module,
+        },
+    }
+    return render(request, 'admin_panel/logs_list.html', context)

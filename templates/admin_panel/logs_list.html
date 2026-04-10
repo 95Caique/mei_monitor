@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Logs do Sistema - MEI Monitor{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px; margin: 0 0 8px 0;">
+        🧾 Logs do Sistema
+    </h1>
+    <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Acompanhe as principais ações e eventos do sistema.</p>
+</div>
+
+<div class="table-wrap">
+    <div class="table-head" style="gap: 12px; flex-wrap: wrap;">
+        <h3 style="margin: 0;">Registros</h3>
+        <form method="get" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input type="text" name="q" value="{{ filters.q }}" placeholder="Buscar" style="min-width: 200px;">
+            <select name="level">
+                <option value="">Nível</option>
+                {% for value, label in levels %}
+                    <option value="{{ value }}"{% if filters.level == value %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="action">
+                <option value="">Ação</option>
+                {% for value, label in actions %}
+                    <option value="{{ value }}"{% if filters.action == value %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="module" value="{{ filters.module }}" placeholder="Módulo" style="min-width: 140px;">
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+            <a href="{% url 'adminpanel:logs_list' %}" class="btn btn-ghost btn-sm">Limpar</a>
+        </form>
+    </div>
+
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th style="width: 160px;">Data</th>
+                <th style="width: 120px;">Nível</th>
+                <th style="width: 140px;">Ação</th>
+                <th>Título</th>
+                <th style="width: 140px;">Usuário</th>
+                <th style="width: 160px;">Módulo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in page_obj %}
+            <tr>
+                <td style="font-size: 12px; color: var(--text-muted);">{{ log.created_at|date:"d/m/Y H:i" }}</td>
+                <td>
+                    {% if log.level == 'CRITICAL' or log.level == 'ERROR' %}
+                        <span class="badge badge-red">{{ log.get_level_display }}</span>
+                    {% elif log.level == 'WARNING' %}
+                        <span class="badge badge-yellow">{{ log.get_level_display }}</span>
+                    {% elif log.level == 'INFO' %}
+                        <span class="badge badge-blue">{{ log.get_level_display }}</span>
+                    {% elif log.level == 'DEBUG' %}
+                        <span class="badge badge-gray">{{ log.get_level_display }}</span>
+                    {% else %}
+                        <span class="badge badge-gray">{{ log.level }}</span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 12px; color: var(--text-sub);">{{ log.get_action_type_display }}</td>
+                <td>
+                    <div style="font-weight: 600; color: var(--text);">{{ log.title }}</div>
+                    {% if log.description %}
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">{{ log.description|truncatechars:120 }}</div>
+                    {% endif %}
+                </td>
+                <td style="font-size: 12px; color: var(--text-sub);">
+                    {% if log.user %}{{ log.user.username }}{% else %}Sistema{% endif %}
+                </td>
+                <td style="font-size: 12px; color: var(--text-sub);">{{ log.module|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="padding: 28px; text-align: center; color: var(--text-muted);">
+                    Nenhum log encontrado.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        <div class="page-info">
+            Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+        </div>
+        <div class="page-buttons">
+            {% with q=filters.q level=filters.level action=filters.action module=filters.module %}
+                {% if page_obj.has_previous %}
+                    <a href="?page=1&q={{ q|urlencode }}&level={{ level }}&action={{ action }}&module={{ module|urlencode }}" class="page-btn">← Primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}&level={{ level }}&action={{ action }}&module={{ module|urlencode }}" class="page-btn">Anterior</a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <button class="page-btn active">{{ num }}</button>
+                    {% else %}
+                        <a href="?page={{ num }}&q={{ q|urlencode }}&level={{ level }}&action={{ action }}&module={{ module|urlencode }}" class="page-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}&level={{ level }}&action={{ action }}&module={{ module|urlencode }}" class="page-btn">Próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q|urlencode }}&level={{ level }}&action={{ action }}&module={{ module|urlencode }}" class="page-btn">Última →</a>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

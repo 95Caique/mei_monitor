@@ -176,6 +176,12 @@ def create_invoice(request):
                 try:
                     with transaction.atomic():
                         invoice.save()
+                        from monitor.models import Alert
+                        Alert.objects.create(
+                            empresa=empresa,
+                            level='INFO',
+                            message=f"✅ Nota fiscal #{invoice.invoice_id} criada com sucesso. Valor: R$ {invoice.total:,.2f}"
+                        )
                     return redirect('dashboard')
                 except IntegrityError:
                     form.add_error(None, 'Erro ao salvar a nota: ID já existe (condição de concorrência).')
@@ -335,22 +341,23 @@ def notifications_api(request):
         return JsonResponse({'alerts': [], 'count': 0})
 
     from django.utils import timezone
-    since = timezone.now() - timezone.timedelta(hours=24)
-
+    from django.utils.dateparse import parse_datetime
+    
+    since = None
     last_check = request.GET.get('since')
+    
     if last_check:
         try:
-            from django.utils.dateparse import parse_datetime
             parsed_since = parse_datetime(last_check)
             if parsed_since is not None:
                 since = parsed_since
-        except:
+        except Exception as e:
             pass
 
     if since is None:
         since = timezone.now() - timezone.timedelta(hours=24)
 
-    alerts = empresa.alerts.filter(created_at__gte=since).order_by('-created_at')[:10]
+    alerts = empresa.alerts.filter(created_at__gte=since).order_by('-created_at')[:20]
 
     # Converter para JSON
     alerts_data = []

@@ -31,12 +31,57 @@ def validar_cnpj(cnpj):
 
 
 class RegisterForm(UserCreationForm):
-    cnpj = forms.CharField(max_length=14, required=True)
-    razao_social = forms.CharField(max_length=255, required=True)
+    nome_completo = forms.CharField(
+        max_length=255, 
+        required=True,
+        label="Nome Completo",
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Caique Silva'})
+    )
+    
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        label="Nome de Usuário (sem espaços)",
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: caique.silva'})
+    )
+    
+    # Email
+    email = forms.EmailField(
+        required=True,
+        label="Email",
+        widget=forms.EmailInput(attrs={'placeholder': 'Ex: seu.email@empresa.com'})
+    )
+    
+    cnpj = forms.CharField(
+        max_length=14, 
+        required=True,
+        label="CNPJ",
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: 11111111000191'})
+    )
+    razao_social = forms.CharField(
+        max_length=255, 
+        required=True,
+        label="Razão Social",
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Empresa Exemplo Ltda'})
+    )
 
     class Meta:
         model = get_user_model()
-        fields = ("username", "email")
+        fields = ("nome_completo", "username", "email", "password1", "password2", "cnpj", "razao_social")
+
+    def clean_nome_completo(self):
+        nome = self.cleaned_data.get("nome_completo", "").strip()
+
+        if len(nome) < 3:
+            raise ValidationError("Nome muito curto.")
+
+        if nome.isdigit():
+            raise ValidationError("Nome inválido.")
+
+        if " " not in nome:
+            raise ValidationError("Informe nome e sobrenome.")
+
+        return nome
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").lower()
@@ -100,6 +145,12 @@ class RegisterForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=commit)
+        
+        nome_completo = self.cleaned_data.get("nome_completo", "").strip()
+        partes = nome_completo.split(maxsplit=1)
+        user.first_name = partes[0] if partes else ""
+        user.last_name = partes[1] if len(partes) > 1 else ""
+        user.save()
 
         Empresa.objects.create(
             user=user,

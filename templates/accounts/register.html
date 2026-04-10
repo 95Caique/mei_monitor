@@ -8,33 +8,121 @@
         <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 32px; box-shadow: var(--shadow-sm);">
             <div style="text-align: center; margin-bottom: 32px;">
                 <div style="width: 50px; height: 50px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-family: var(--font-display); color: white; font-size: 24px; font-weight: 800;">ME</div>
-                <h1 style="font-size: 24px; margin: 0; color: var(--text);">Registrar no MEI Monitor</h1>
-                <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Crie sua conta para começar</p>
+                <h1 style="font-size: 24px; margin: 0; color: var(--text);">Criar Conta</h1>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Registre-se para usar o MEI Monitor</p>
             </div>
 
-            <form method="post">
+            <form method="post" novalidate>
                 {% csrf_token %}
 
-                {% for field in form %}
+                {% if form.non_field_errors %}
+                <div class="cf-alert error" style="margin-bottom: 16px;">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Seção: Dados de Acesso -->
+                <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-soft);">
+                    <div style="font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;">📧 Dados de Acesso</div>
+
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.nome_completo.label }}</label>
+                        {{ form.nome_completo }}
+                        <small style="display: block; color: var(--text-muted); font-size: 11px; margin-top: 4px;">Seu nome completo (aparecerá no perfil)</small>
+                        {% if form.nome_completo.errors %}
                         <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
-                            {% for error in field.errors %}{{ error }}{% endfor %}
+                            {% for error in form.nome_completo.errors %}{{ error }}{% endfor %}
                         </span>
                         {% endif %}
                     </div>
-                {% endfor %}
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.username.label }}</label>
+                        {{ form.username }}
+                        <small style="display: block; color: var(--text-muted); font-size: 11px; margin-top: 4px;">Sem espaços (Ex: caique.silva ou caique_silva)</small>
+                        {% if form.username.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in form.username.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in form.email.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-bottom: 0;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.password1.label }}</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in form.password1.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Seção: Confirmação de Senha -->
+                <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-soft);">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.password2.label }}</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Seção: Dados da Empresa -->
+                <div style="margin-bottom: 24px;">
+                    <div style="font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;">🏢 Dados da Empresa</div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.cnpj.label }}</label>
+                        {{ form.cnpj }}
+                        <small style="display: block; color: var(--text-muted); font-size: 11px; margin-top: 4px;">
+                            Formato: 14 dígitos (ex: 11111111000191)
+                        </small>
+                        {% if form.cnpj.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in form.cnpj.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-bottom: 0;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">{{ form.razao_social.label }}</label>
+                        {{ form.razao_social }}
+                        <small style="display: block; color: var(--text-muted); font-size: 11px; margin-top: 4px;">
+                            Este nome que aparecerá no sistema
+                        </small>
+
+                        {% if form.razao_social.errors %}
+                        <span style="display: block; font-size: 12px; color: var(--red); margin-top: 4px;">
+                            {% for error in form.razao_social.errors %}{{ error }}{% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    Registrar
+                    ✅ Criar Conta
                 </button>
             </form>
 
             <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
                 <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
-                    Já tem acesso? <a href="{% url 'login' %}" style="color: var(--accent-2);">Faça login</a>
+                    Já tem acesso? <a href="{% url 'login' %}" style="color: var(--accent-2); font-weight: 600;">Faça login</a>
                 </p>
             </div>
         </div>

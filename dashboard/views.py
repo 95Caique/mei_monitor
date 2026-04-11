@@ -191,7 +191,113 @@ def create_invoice(request):
 
 
 @login_required
+@login_required
 def reports(request):
+    # Verificar se é contador
+    is_accountant = hasattr(request.user, 'accountant_profile') and request.user.accountant_profile.is_active
+    
+    if is_accountant:
+        # Relatórios do contador
+        from accountants.models import AccountantProfile
+        from datetime import timedelta
+        
+        profile = request.user.accountant_profile
+        
+        # Filtros
+        period = request.GET.get('period', 'semestre')
+        client_id = request.GET.get('client', '')
+        view_type = request.GET.get('view', 'all')  # all, personal, clients
+        
+        # Data de corte
+        today = datetime.date.today()
+        if period == 'semana':
+            start_date = today - timedelta(days=7)
+        elif period == 'mes':
+            start_date = today - timedelta(days=30)
+        elif period == 'trimestre':
+            start_date = today - timedelta(days=90)
+        elif period == 'semestre':
+            start_date = today - timedelta(days=180)
+        else:  # ano
+            start_date = today - timedelta(days=365)
+        
+        end_date = today
+        
+        # Dados do contador (se tiver empresa)
+        accountant_report = None
+        if hasattr(request.user, 'empresa'):
+            empresa = request.user.empresa
+            invoices = Invoice.objects.filter(
+                empresa=empresa,
+                created_at__date__gte=start_date,
+                created_at__date__lte=end_date
+            ).order_by('-created_at')
+            
+            issued = invoices.filter(status='ISSUED')
+            cancelled = invoices.filter(status='CANCELLED')
+            
+            total_value = issued.aggregate(Sum('total'))['total__sum'] or 0
+            cancelled_value = cancelled.aggregate(Sum('total'))['total__sum'] or 0
+            
+            accountant_report = {
+                'empresa': empresa,
+                'invoices': invoices[:20],
+                'total_count': invoices.count(),
+                'issued_count': issued.count(),
+                'cancelled_count': cancelled.count(),
+                'total_value': total_value,
+                'cancelled_value': cancelled_value,
+            }
+        
+        # Dados dos clientes
+        client_reports = []
+        clients_query = profile.clients.select_related('empresa').all()
+        
+        # Se filtrou por cliente específico
+        if client_id:
+            try:
+                clients_query = clients_query.filter(id=int(client_id))
+            except (ValueError, TypeError):
+                pass
+        
+        for client in clients_query:
+            invoices = Invoice.objects.filter(
+                empresa=client.empresa,
+                created_at__date__gte=start_date,
+                created_at__date__lte=end_date
+            ).order_by('-created_at')
+            
+            issued = invoices.filter(status='ISSUED')
+            cancelled = invoices.filter(status='CANCELLED')
+            
+            total_value = issued.aggregate(Sum('total'))['total__sum'] or 0
+            cancelled_value = cancelled.aggregate(Sum('total'))['total__sum'] or 0
+            
+            client_reports.append({
+                'client': client,
+                'invoices': invoices[:20],
+                'total_count': invoices.count(),
+                'issued_count': issued.count(),
+                'cancelled_count': cancelled.count(),
+                'total_value': total_value,
+                'cancelled_value': cancelled_value,
+            })
+        
+        context = {
+            'is_accountant': True,
+            'profile': profile,
+            'accountant_report': accountant_report,
+            'client_reports': client_reports,
+            'period': period,
+            'client_id': client_id,
+            'view_type': view_type,
+            'clients': clients_query,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+        return render(request, 'dashboard/reports.html', context)
+    
+    # Relatórios de usuário normal (empresa)
     empresa = Empresa.objects.filter(user=request.user).first()
     if not empresa:
         return redirect('dashboard')
@@ -273,6 +379,7 @@ def reports(request):
     yearly = empresa.invoices.annotate(year=TruncYear('created_at')).values('year').annotate(total=Sum('total'), count=Count('id')).order_by('year')
 
     context = {
+        'is_accountant': False,
         'empresa': empresa,
         'status_counts': status_counts,
         'status_labels': status_labels,

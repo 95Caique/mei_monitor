@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Relatórios - Contador{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- HEADER -->
+    <div style="margin-bottom: 32px;">
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            <a href="{% url 'accountants:dashboard' %}" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+            <span style="color: var(--text-muted);">&nbsp;›&nbsp;</span>
+            <span style="color: var(--text);">Relatórios por Cliente</span>
+        </div>
+        <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.4px;">
+            📊 Relatórios por Cliente
+        </h1>
+        <p style="color: var(--text-muted); font-size: 13px;">
+            Acompanhe os dados de emissão de notas de cada cliente.
+        </p>
+    </div>
+
+    <!-- FILTROS -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+        <form method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    📅 Período
+                </label>
+                <select name="period" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: var(--surface); color: var(--text);">
+                    <option value="semana" {% if period == 'semana' %}selected{% endif %}>Última Semana</option>
+                    <option value="mes" {% if period == 'mes' %}selected{% endif %}>Último Mês</option>
+                    <option value="trimestre" {% if period == 'trimestre' %}selected{% endif %}>Último Trimestre</option>
+                    <option value="semestre" {% if period == 'semestre' %}selected{% endif %}>Último Semestre</option>
+                    <option value="ano" {% if period == 'ano' %}selected{% endif %}>Último Ano</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    👥 Cliente
+                </label>
+                <select name="client" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: var(--surface); color: var(--text);">
+                    <option value="">Todos os Clientes</option>
+                    {% for client in clients %}
+                    <option value="{{ client.id }}" {% if client_id|stringformat:'s' == client.id|stringformat:'s' %}selected{% endif %}>
+                        {{ client.empresa.razao_social }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;">
+                    🔍 Filtrar
+                </button>
+                <a href="{% url 'accountants:reports' %}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                    ✕ Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- RELATÓRIOS POR CLIENTE -->
+    {% if client_reports %}
+
+    {% for report in client_reports %}
+    <div style="margin-bottom: 32px;">
+
+        <!-- HEADER DO CLIENTE -->
+        <div style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); border-radius: 10px 10px 0 0; padding: 20px; color: white; margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                <div>
+                    <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; margin: 0 0 4px 0;">
+                        👤 {{ report.client.empresa.razao_social }}
+                    </h2>
+                    <p style="font-size: 13px; opacity: 0.9; margin: 0;">
+                        CNPJ: {{ report.client.empresa.cnpj }}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 12px; opacity: 0.8; margin: 0;">Taxa Mensal</p>
+                    <p style="font-size: 16px; font-weight: 700; margin: 0;">R$ {{ report.client.monthly_fee|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÉTRICAS DO CLIENTE -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Total de Notas</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text); margin: 0;">
+                    {{ report.total_count }}
+                </p>
+                <p style="color: var(--text-muted); font-size: 11px; margin: 4px 0 0 0;">
+                    {{ report.issued_count }} emitidas / {{ report.cancelled_count }} canceladas
+                </p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--green);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Valor Emitido</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--green); margin: 0;">
+                    R$ {{ report.total_value|floatformat:2 }}
+                </p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--red);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Valor Cancelado</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--red); margin: 0;">
+                    R$ {{ report.cancelled_value|floatformat:2 }}
+                </p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); text-align: center;">
+                <a href="{% url 'accountants:client_detail' report.client.id %}" class="btn btn-primary" style="width: 100%; text-align: center;">
+                    Ver Cliente →
+                </a>
+            </div>
+
+        </div>
+
+        <!-- TABELA DE NOTAS DO CLIENTE -->
+        {% if report.invoices %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 10px 10px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #FAFBFC; border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Nº Nota</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Valor</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Data</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in report.invoices %}
+                    <tr style="border-bottom: 1px solid var(--border-soft); {% cycle 'background: #FAFBFC;' '' %}">
+                        <td style="padding: 10px 14px; font-weight: 600; color: var(--text); font-size: 13px;">{{ invoice.invoice_id }}</td>
+                        <td style="padding: 10px 14px; font-size: 13px; color: var(--text);">R$ {{ invoice.total|floatformat:2 }}</td>
+                        <td style="padding: 10px 14px; font-size: 12px; color: var(--text-muted);">{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
+                        <td style="padding: 10px 14px;">
+                            {% if invoice.status == 'ISSUED' %}
+                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; background: #DCFCE7; color: #16A34A; border: 1px solid #bbf7d0; font-size: 11px; font-weight: 700;">
+                                ● Emitida
+                            </span>
+                            {% else %}
+                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; background: #FEE2E2; color: #DC2626; border: 1px solid #fecaca; font-size: 11px; font-weight: 700;">
+                                ● Cancelada
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 10px 10px; padding: 20px; text-align: center;">
+            <p style="color: var(--text-muted); font-size: 13px;">Nenhuma nota neste período</p>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 40px 20px; text-align: center; box-shadow: var(--shadow-sm);">
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">📋 Nenhum cliente encontrado</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+

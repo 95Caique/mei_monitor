@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ client.empresa.razao_social }} - Contador{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- HEADER -->
+    <div style="margin-bottom: 32px;">
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            <a href="{% url 'accountants:clients_list' %}" style="color: var(--text-muted); text-decoration: none;">Meus Clientes</a>
+            <span style="color: var(--text-muted);">&nbsp;›&nbsp;</span>
+            <span style="color: var(--text);">{{ client.empresa.razao_social }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+            <div>
+                <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 8px 0; letter-spacing: -.4px;">
+                    📊 {{ client.empresa.razao_social }}
+                </h1>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+                    CNPJ: {{ client.empresa.cnpj }}
+                </p>
+            </div>
+            <a href="{% url 'accountants:client_edit' client.id %}" class="btn btn-secondary">✏️ Editar</a>
+        </div>
+    </div>
+
+    <!-- GRID 2 COLUNAS -->
+    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 24px; margin-bottom: 32px;">
+
+        <!-- NOTAS DO CLIENTE -->
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm); overflow: hidden;">
+
+            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 15px; font-weight: 600; color: var(--text); margin: 0;">Notas Fiscais</h2>
+                <a href="{% url 'accountants:invoice_create' client.id %}" class="btn btn-sm" style="padding: 6px 12px; font-size: 12px;">
+                    ➕ Nova Nota
+                </a>
+            </div>
+
+            {% if page.object_list %}
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #FAFBFC; border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Nº Nota</th>
+                        <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Valor</th>
+                        <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Status</th>
+                        <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: center;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in page.object_list %}
+                    <tr style="border-bottom: 1px solid var(--border-soft); {% cycle 'background: #FAFBFC;' '' %}">
+                        <td style="padding: 12px 16px; font-weight: 600; color: var(--text);">{{ invoice.invoice_id }}</td>
+                        <td style="padding: 12px 16px; font-size: 13px; color: var(--text);">R$ {{ invoice.total|floatformat:2 }}</td>
+                        <td style="padding: 12px 16px;">
+                            {% if invoice.status == 'ISSUED' %}
+                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; background: #DCFCE7; color: #16A34A; border: 1px solid #bbf7d0; font-size: 11.5px; font-weight: 700;">
+                                ● Emitida
+                            </span>
+                            {% elif invoice.status == 'CANCELLED' %}
+                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; background: #FEE2E2; color: #DC2626; border: 1px solid #fecaca; font-size: 11.5px; font-weight: 700;">
+                                ● Cancelada
+                            </span>
+                            {% else %}
+                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; background: #FEF3C7; color: #B45309; border: 1px solid #fde68a; font-size: 11.5px; font-weight: 700;">
+                                ● {{ invoice.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px 16px; text-align: center;">
+                            {% if invoice.status != 'CANCELLED' %}
+                            <form method="post" action="{% url 'accountants:invoice_cancel' client.id invoice.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm" style="padding: 5px 10px; background: #DC2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                                    🚫 Cancelar
+                                </button>
+                            </form>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 12px;">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- PAGINAÇÃO -->
+            {% if page.has_other_pages %}
+            <div style="padding: 12px 16px; background: #FAFBFC; border-top: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="font-size: 12px; color: var(--text-muted);">
+                    Mostrando {{ page.start_index }} - {{ page.end_index }} de {{ page.paginator.count }}
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    {% if page.has_previous %}
+                    <a href="?page=1" style="padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-sub); text-decoration: none;">←</a>
+                    <a href="?page={{ page.previous_page_number }}" style="padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-sub); text-decoration: none;">Anterior</a>
+                    {% endif %}
+
+                    <span style="padding: 6px 10px; background: var(--accent); color: white; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                        {{ page.number }}
+                    </span>
+
+                    {% if page.has_next %}
+                    <a href="?page={{ page.next_page_number }}" style="padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-sub); text-decoration: none;">Próximo</a>
+                    <a href="?page={{ page.paginator.num_pages }}" style="padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-sub); text-decoration: none;">→</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div style="padding: 40px 20px; text-align: center;">
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Nenhuma nota fiscal registrada</p>
+                <a href="{% url 'accountants:invoice_create' client.id %}" class="btn btn-primary">+ Criar Primeira Nota</a>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- SIDEBAR COM INFORMAÇÕES -->
+        <div>
+            <!-- INFO DO CLIENTE -->
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; box-shadow: var(--shadow-sm); margin-bottom: 16px;">
+                <h3 style="font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 12px 0;">📋 Informações</h3>
+
+                <div style="margin-bottom: 12px;">
+                    <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 0 0 4px 0;">Status</p>
+                    <p style="font-size: 13px; color: var(--text); margin: 0; font-weight: 600;">
+                        {% if client.status == 'ACTIVE' %}
+                        ✓ Ativo
+                        {% elif client.status == 'INACTIVE' %}
+                        ⊘ Inativo
+                        {% else %}
+                        🔒 Suspenso
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 0 0 4px 0;">Taxa Mensal</p>
+                    <p style="font-size: 13px; color: var(--text); margin: 0; font-weight: 600;">R$ {{ client.monthly_fee|floatformat:2 }}</p>
+                </div>
+
+                <div>
+                    <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 0 0 4px 0;">Membro Desde</p>
+                    <p style="font-size: 13px; color: var(--text); margin: 0; font-weight: 600;">{{ client.created_at|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+
+            <!-- ESTATÍSTICAS -->
+            <div style="background: #DBEAFE; border: 1px solid #93C5FD; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+                <h4 style="font-size: 12px; font-weight: 700; color: #1E40AF; margin: 0 0 10px 0;">📊 Estatísticas</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 12px; color: #1E40AF; line-height: 1.8;">
+                    <li><strong>Total de Notas:</strong> {{ client.total_invoices }}</li>
+                    <li><strong>Emitidas:</strong> {{ client.issued_invoices }}</li>
+                    <li><strong>Canceladas:</strong> {{ client.cancelled_invoices }}</li>
+                </ul>
+            </div>
+
+            {% if client.notes %}
+            <!-- OBSERVAÇÕES -->
+            <div style="background: #F1F5F9; border: 1px solid var(--border); border-radius: 10px; padding: 14px;">
+                <h4 style="font-size: 12px; font-weight: 700; color: var(--text); margin: 0 0 10px 0;">📝 Notas</h4>
+                <p style="font-size: 12px; color: var(--text-sub); margin: 0; line-height: 1.6;">{{ client.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+        <a href="{% url 'accountants:clients_list' %}" class="btn btn-secondary">← Voltar</a>
+    </div>
+
+</div>
+{% endblock %}
+

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Contador{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- HEADER -->
+    <div style="margin-bottom: 32px;">
+        <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.4px;">
+            👨‍💼 Dashboard - Minha Carteira
+        </h1>
+        <p style="color: var(--text-muted); font-size: 13px;">
+            Bem-vindo, <strong>{{ profile.professional_name }}</strong>. Gerencie seus clientes e notas fiscais.
+        </p>
+    </div>
+
+    <!-- MÉTRICAS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px;">
+
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: var(--shadow-sm); border-bottom: 3px solid var(--blue);">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <p style="color: var(--text-muted); font-size: 12px; font-weight: 600; margin-bottom: 8px;">Clientes Ativos</p>
+                    <div style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -.8px;">{{ total_clients }}</div>
+                </div>
+                <div style="width: 48px; height: 48px; background: #DBEAFE; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👥</div>
+            </div>
+        </div>
+
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: var(--shadow-sm); border-bottom: 3px solid var(--green);">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <p style="color: var(--text-muted); font-size: 12px; font-weight: 600; margin-bottom: 8px;">Notas Emitidas</p>
+                    <div style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -.8px;">{{ total_invoices }}</div>
+                </div>
+                <div style="width: 48px; height: 48px; background: #DCFCE7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📄</div>
+            </div>
+        </div>
+
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: var(--shadow-sm); border-bottom: 3px solid var(--yellow);">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <p style="color: var(--text-muted); font-size: 12px; font-weight: 600; margin-bottom: 8px;">Notas em Processamento</p>
+                    <div style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -.8px;">{{ issued_invoices }}</div>
+                </div>
+                <div style="width: 48px; height: 48px; background: #FEF3C7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">⏳</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AÇÕES RÁPIDAS -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 32px; box-shadow: var(--shadow-sm);">
+        <h2 style="font-size: 16px; font-weight: 700; color: var(--text); margin: 0 0 16px 0;">⚡ Ações Rápidas</h2>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{% url 'accountants:client_create' %}" class="btn btn-primary" style="padding: 10px 16px;">➕ Novo Cliente</a>
+            <a href="{% url 'accountants:clients_list' %}" class="btn btn-secondary" style="padding: 10px 16px;">👥 Meus Clientes</a>
+            <a href="{% url 'reports' %}" class="btn btn-secondary" style="padding: 10px 16px;">📊 Relatórios</a>
+            <a href="{% url 'accountants:profile' %}" class="btn btn-secondary" style="padding: 10px 16px;">⚙️ Meu Perfil</a>
+        </div>
+    </div>
+
+    <!-- CLIENTES RECENTES -->
+    {% if recent_clients %}
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 16px; font-weight: 700; color: var(--text); margin: 0;">👥 Clientes Recentes</h2>
+            <a href="{% url 'accountants:clients_list' %}" style="font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600;">Ver Todos →</a>
+        </div>
+
+        <div style="display: grid; gap: 12px;">
+            {% for client in recent_clients %}
+            <div style="background: #FAFBFC; border: 1px solid var(--border-soft); border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <p style="font-weight: 600; color: var(--text); margin: 0;">{{ client.empresa.razao_social }}</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0;">{{ client.empresa.cnpj }}</p>
+                </div>
+                <a href="{% url 'accountants:client_detail' client.id %}" class="btn btn-sm" style="padding: 6px 12px; font-size: 12px;">Ver →</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+>
+            <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <p style="color: var(--text-muted); font-size: 12px; font-weight: 600; margin-bottom: 8px;">Em Processamento</p>
+                    <div style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -.8px;">
+                        {{ issued_invoices }}
+                    </div>
+                </div>
+                <div style="width: 48px; height: 48px; background: #FEF3C7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    ⏳
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GRID 2 COLUNAS -->
+    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+
+        <!-- CLIENTES RECENTES -->
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 15px; font-weight: 600; color: var(--text); margin: 0;">Clientes Recentes</h2>
+                    <a href="{% url 'accountants:clients_list' %}" style="font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600;">Ver Todos →</a>
+                </div>
+            </div>
+
+            {% if recent_clients %}
+            <div>
+                {% for client in recent_clients %}
+                <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 13px; font-weight: 600; color: var(--text); margin: 0 0 4px 0;">{{ client.empresa.razao_social }}</p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">{{ client.empresa.cnpj }}</p>
+                    </div>
+                    <a href="{% url 'accountants:client_detail' client.id %}" class="btn btn-sm" style="padding: 6px 12px; font-size: 12px;">
+                        Ver →
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="padding: 40px 20px; text-align: center;">
+                <p style="color: var(--text-muted); font-size: 13px;">Nenhum cliente adicionado ainda</p>
+                <a href="{% url 'accountants:client_create' %}" class="btn btn-primary" style="margin-top: 12px; display: inline-block;">
+                    + Adicionar Cliente
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- SIDEBAR -->
+        <div>
+            <div style="background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+                <h3 style="font-size: 13px; font-weight: 700; color: var(--accent); margin: 0 0 12px 0;">
+                    📋 Ações Rápidas
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="{% url 'accountants:client_create' %}" class="btn btn-primary" style="width: 100%; text-align: center; padding: 10px;">
+                        ➕ Novo Cliente
+                    </a>
+                    <a href="{% url 'accountants:clients_list' %}" class="btn btn-secondary" style="width: 100%; text-align: center; padding: 10px;">
+                        👥 Meus Clientes
+                    </a>
+                    <a href="{% url 'accountants:profile' %}" class="btn btn-secondary" style="width: 100%; text-align: center; padding: 10px;">
+                        ⚙️ Meu Perfil
+                    </a>
+                </div>
+            </div>
+
+            <div style="background: #DBEAFE; border: 1px solid #93C5FD; border-radius: 10px; padding: 14px;">
+                <h4 style="font-size: 12px; font-weight: 700; color: #1E40AF; margin: 0 0 10px 0;">
+                    💡 Dica
+                </h4>
+                <p style="font-size: 11.5px; color: #1E40AF; margin: 0; line-height: 1.6;">
+                    Adicione seus clientes MEI e gerencie todas as suas notas fiscais em um único lugar.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+

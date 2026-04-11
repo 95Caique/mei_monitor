@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Novo Cliente - Contador{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+
+    <!-- HEADER -->
+    <div style="margin-bottom: 32px;">
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            <a href="{% url 'accountants:clients_list' %}" style="color: var(--text-muted); text-decoration: none;">Meus Clientes</a>
+            <span style="color: var(--text-muted);">&nbsp;›&nbsp;</span>
+            <span style="color: var(--text);">Adicionar Cliente</span>
+        </div>
+        <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.4px;">
+            ➕ Adicionar Novo Cliente
+        </h1>
+        <p style="color: var(--text-muted); font-size: 13px;">
+            Vincule um novo cliente MEI à sua carteira.
+        </p>
+    </div>
+
+    <!-- FORMULÁRIO -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; box-shadow: var(--shadow-sm);">
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 20px;">
+                <label for="{{ form.empresa_cnpj.id_for_label }}" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    {{ form.empresa_cnpj.label }} <span style="color: var(--red);">*</span>
+                </label>
+                {{ form.empresa_cnpj }}
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Digite o CNPJ da empresa MEI que já está cadastrada no sistema</p>
+                {% if form.empresa_cnpj.errors %}
+                <p style="font-size: 12px; color: var(--red); margin-top: 4px;">⚠️ {{ form.empresa_cnpj.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="{{ form.status.id_for_label }}" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    {{ form.status.label }} <span style="color: var(--red);">*</span>
+                </label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                <p style="font-size: 12px; color: var(--red); margin-top: 4px;">⚠️ {{ form.status.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="{{ form.monthly_fee.id_for_label }}" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    {{ form.monthly_fee.label }}
+                </label>
+                {{ form.monthly_fee }}
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Taxa mensal que você cobra do cliente</p>
+                {% if form.monthly_fee.errors %}
+                <p style="font-size: 12px; color: var(--red); margin-top: 4px;">⚠️ {{ form.monthly_fee.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label for="{{ form.notes.id_for_label }}" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Observações sobre o cliente (opcional)</p>
+                {% if form.notes.errors %}
+                <p style="font-size: 12px; color: var(--red); margin-top: 4px;">⚠️ {{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-primary">✓ Adicionar Cliente</button>
+                <a href="{% url 'accountants:clients_list' %}" class="btn btn-secondary">← Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<style>
+    form input[type="text"],
+    form input[type="number"],
+    form select,
+    form textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-size: 13px;
+        font-family: inherit;
+        background: var(--surface);
+        color: var(--text);
+        transition: border-color .15s;
+        box-sizing: border-box;
+    }
+
+    form input[type="text"]:focus,
+    form input[type="number"]:focus,
+    form select:focus,
+    form textarea:focus {
+        outline: none;
+        border-color: var(--accent-2);
+        box-shadow: 0 0 0 3px rgba(59,91,219,.08);
+    }
+
+    form textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+</style>
+{% endblock %}
+

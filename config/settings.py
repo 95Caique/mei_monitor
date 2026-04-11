@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'adminpanel',
     'logs',
+    'accountants',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Confirmar Cancelamento{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+
+    <div style="background: #FEE2E2; border: 1px solid #fecaca; border-radius: 10px; padding: 24px; margin-bottom: 32px;">
+        <div style="display: flex; gap: 16px;">
+            <div style="font-size: 32px; flex-shrink: 0;">⚠️</div>
+            <div>
+                <h1 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #DC2626; margin: 0 0 8px 0;">
+                    Confirmar Cancelamento de Nota
+                </h1>
+                <p style="color: #991B1B; font-size: 13px; margin: 0;">
+                    Tem certeza que deseja cancelar a nota <strong>{{ invoice.invoice_id }}</strong>?
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+        <div style="margin-bottom: 16px;">
+            <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 0 0 4px 0;">Nº da Nota</p>
+            <p style="font-size: 15px; font-weight: 600; color: var(--text); margin: 0;">{{ invoice.invoice_id }}</p>
+        </div>
+        <div style="margin-bottom: 16px;">
+            <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 0 0 4px 0;">Valor</p>
+            <p style="font-size: 15px; font-weight: 600; color: var(--text); margin: 0;">R$ {{ invoice.total|floatformat:2 }}</p>
+        </div>
+        <div>
+            <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 0 0 4px 0;">Cliente</p>
+            <p style="font-size: 15px; font-weight: 600; color: var(--text); margin: 0;">{{ client.empresa.razao_social }}</p>
+        </div>
+    </div>
+
+    <div style="background: #FEF3C7; border: 1px solid #fde68a; border-radius: 10px; padding: 16px; margin-bottom: 24px;">
+        <p style="font-size: 12px; color: #B45309; margin: 0; line-height: 1.6;">
+            <strong>Aviso:</strong> Esta ação não pode ser desfeita. A nota será marcada como cancelada e não poderá ser emitida novamente.
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+        <form method="post" style="flex: 1;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="width: 100%; background: #DC2626; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                🚫 Confirmar Cancelamento
+            </button>
+        </form>
+        <a href="{% url 'accountants:client_detail' client.id %}" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 12px;">
+            ← Voltar
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+

@@ -75,6 +75,20 @@
             <span class="nav-label">Telegram</span>
         </a>
 
+        {% if request.user.accountant_profile or request.user.is_superuser %}
+        <div class="nav-section-label">Minha Carteira</div>
+
+        <a href="{% url 'accountants:dashboard' %}" class="nav-item{% if 'accountants' in request.path %} active{% endif %}">
+            <span class="nav-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </span>
+            <span class="nav-label">Meus Clientes</span>
+        </a>
+        {% endif %}
+
         {% if request.user.is_superuser %}
         <div class="nav-section-label">Administração</div>
 

@@ -5,10 +5,236 @@
 {% block title %}Relatórios - MEI Monitor{% endblock %}
 
 {% block content %}
+
+{% if is_accountant %}
+<!-- RELATÓRIOS DO CONTADOR -->
+<div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- HEADER -->
+    <div style="margin-bottom: 32px;">
+        <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px; margin: 0 0 8px 0;">
+            📊 Meus Relatórios
+        </h1>
+        <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Acompanhe seus relatórios e o desempenho de emissão de notas dos seus clientes</p>
+    </div>
+
+    <!-- FILTROS -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+        <form method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    📅 Período
+                </label>
+                <select name="period" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: var(--surface); color: var(--text);">
+                    <option value="semana" {% if period == 'semana' %}selected{% endif %}>Última Semana</option>
+                    <option value="mes" {% if period == 'mes' %}selected{% endif %}>Último Mês</option>
+                    <option value="trimestre" {% if period == 'trimestre' %}selected{% endif %}>Último Trimestre</option>
+                    <option value="semestre" {% if period == 'semestre' %}selected{% endif %}>Último Semestre</option>
+                    <option value="ano" {% if period == 'ano' %}selected{% endif %}>Último Ano</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px;">
+                    👥 Cliente
+                </label>
+                <select name="client" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: var(--surface); color: var(--text);">
+                    <option value="">Todos os Clientes</option>
+                    {% for client in clients %}
+                    <option value="{{ client.id }}" {% if client_id|stringformat:'s' == client.id|stringformat:'s' %}selected{% endif %}>
+                        {{ client.empresa.razao_social }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;">
+                    🔍 Filtrar
+                </button>
+                <a href="{% url 'reports' %}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                    ✕ Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- MEU RELATÓRIO (do contador) -->
+    {% if accountant_report %}
+    <div style="margin-bottom: 40px;">
+        <div style="background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%); border-radius: 10px 10px 0 0; padding: 20px; color: white; margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                <div>
+                    <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; margin: 0 0 4px 0;">
+                        💼 Meu Relatório Pessoal
+                    </h2>
+                    <p style="font-size: 13px; opacity: 0.9; margin: 0;">{{ accountant_report.empresa.razao_social }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 12px; opacity: 0.8; margin: 0;">CNPJ</p>
+                    <p style="font-size: 14px; font-weight: 700; margin: 0;">{{ accountant_report.empresa.cnpj }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÉTRICAS DO CONTADOR -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Total de Notas</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text); margin: 0;">{{ accountant_report.total_count }}</p>
+                <p style="color: var(--text-muted); font-size: 11px; margin: 4px 0 0 0;">{{ accountant_report.issued_count }} emitidas / {{ accountant_report.cancelled_count }} canceladas</p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--green);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Valor Emitido</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--green); margin: 0;">R$ {{ accountant_report.total_value|floatformat:2 }}</p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--red);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Valor Cancelado</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--red); margin: 0;">R$ {{ accountant_report.cancelled_value|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <!-- TABELA DO CONTADOR -->
+        {% if accountant_report.invoices %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 10px 10px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #FAFBFC; border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Nº</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Valor</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Data</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in accountant_report.invoices %}
+                    <tr style="border-bottom: 1px solid var(--border-soft); {% cycle 'background: #FAFBFC;' '' %}">
+                        <td style="padding: 10px 14px; font-weight: 600; color: var(--text); font-size: 13px;">{{ invoice.invoice_id }}</td>
+                        <td style="padding: 10px 14px; font-size: 13px; color: var(--text);">R$ {{ invoice.total|floatformat:2 }}</td>
+                        <td style="padding: 10px 14px; font-size: 12px; color: var(--text-muted);">{{ invoice.created_at|date:"d/m/Y" }}</td>
+                        <td style="padding: 10px 14px;">
+                            {% if invoice.status == 'ISSUED' %}
+                            <span style="display: inline-flex; padding: 3px 8px; border-radius: 20px; background: #DCFCE7; color: #16A34A; font-size: 11px; font-weight: 700;">● Emitida</span>
+                            {% else %}
+                            <span style="display: inline-flex; padding: 3px 8px; border-radius: 20px; background: #FEE2E2; color: #DC2626; font-size: 11px; font-weight: 700;">● Cancelada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 10px 10px; padding: 20px; text-align: center;">
+            <p style="color: var(--text-muted); font-size: 13px;">Nenhuma nota neste período</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- TÍTULO CLIENTES -->
+    {% if client_reports %}
+    <div style="margin-top: 40px; padding-top: 32px; border-top: 2px solid var(--border); margin-bottom: 24px;">
+        <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin: 0;">👥 Relatórios de Meus Clientes</h2>
+    </div>
+    {% endif %}
+
+    <!-- RELATÓRIOS POR CLIENTE -->
+    {% if client_reports %}
+    {% for report in client_reports %}
+    <div style="margin-bottom: 32px;">
+
+        <!-- HEADER DO CLIENTE -->
+        <div style="background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%); border-radius: 10px 10px 0 0; padding: 20px; color: white; margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                <div>
+                    <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; margin: 0 0 4px 0;">
+                         {{ report.client.empresa.razao_social }}
+                    </h3>
+                    <p style="font-size: 13px; opacity: 0.9; margin: 0;">CNPJ: {{ report.client.empresa.cnpj }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 12px; opacity: 0.8; margin: 0;">Taxa Mensal</p>
+                    <p style="font-size: 16px; font-weight: 700; margin: 0;">R$ {{ report.client.monthly_fee|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÉTRICAS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Total de Notas</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text); margin: 0;">{{ report.total_count }}</p>
+                <p style="color: var(--text-muted); font-size: 11px; margin: 4px 0 0 0;">{{ report.issued_count }} emitidas / {{ report.cancelled_count }} canceladas</p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--green);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Valor Emitido</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--green); margin: 0;">R$ {{ report.total_value|floatformat:2 }}</p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--red);">
+                <p style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin: 0 0 6px 0;">Valor Cancelado</p>
+                <p style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--red); margin: 0;">R$ {{ report.cancelled_value|floatformat:2 }}</p>
+            </div>
+
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 7px 7px; padding: 14px; box-shadow: var(--shadow-sm); text-align: center;">
+                <a href="{% url 'accountants:client_detail' report.client.id %}" class="btn btn-primary" style="width: 100%; text-align: center;">Ver Cliente →</a>
+            </div>
+        </div>
+
+        <!-- TABELA -->
+        {% if report.invoices %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 10px 10px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #FAFBFC; border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Nº</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Valor</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Data</th>
+                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); text-align: left;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in report.invoices %}
+                    <tr style="border-bottom: 1px solid var(--border-soft); {% cycle 'background: #FAFBFC;' '' %}">
+                        <td style="padding: 10px 14px; font-weight: 600; color: var(--text); font-size: 13px;">{{ invoice.invoice_id }}</td>
+                        <td style="padding: 10px 14px; font-size: 13px; color: var(--text);">R$ {{ invoice.total|floatformat:2 }}</td>
+                        <td style="padding: 10px 14px; font-size: 12px; color: var(--text-muted);">{{ invoice.created_at|date:"d/m/Y" }}</td>
+                        <td style="padding: 10px 14px;">
+                            {% if invoice.status == 'ISSUED' %}
+                            <span style="display: inline-flex; padding: 3px 8px; border-radius: 20px; background: #DCFCE7; color: #16A34A; font-size: 11px; font-weight: 700;">● Emitida</span>
+                            {% else %}
+                            <span style="display: inline-flex; padding: 3px 8px; border-radius: 20px; background: #FEE2E2; color: #DC2626; font-size: 11px; font-weight: 700;">● Cancelada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 0 0 10px 10px; padding: 20px; text-align: center;">
+            <p style="color: var(--text-muted); font-size: 13px;">Nenhuma nota neste período</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 40px 20px; text-align: center; box-shadow: var(--shadow-sm);">
+        <p style="color: var(--text-muted); font-size: 13px;">📋 Nenhum cliente encontrado</p>
+    </div>
+    {% endif %}
+
+</div>
+
+{% else %}
+<!-- RELATÓRIOS DA EMPRESA -->
 <div style="margin-bottom: 32px;">
-    <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px; margin: 0 0 8px 0;">
-        📊 Relatórios
-    </h1>
+    <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px; margin: 0 0 8px 0;">📊 Relatórios</h1>
     <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px 0;">Análise completa do faturamento e notas fiscais</p>
     <div style="background: var(--blue-bg); color: var(--blue); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-weight: 500;">
         🏢 {{ empresa.razao_social }} — {{ empresa.cnpj }}
@@ -34,84 +260,33 @@
 
 <div class="grid-2" style="margin-bottom: 24px;">
     <div class="table-wrap">
-        <div class="table-head">
-            <h3 style="margin: 0;">🥧 Notas por Status</h3>
-        </div>
-        <div style="padding: 20px;">
-            <canvas id="statusChart"></canvas>
-        </div>
+        <div class="table-head"><h3 style="margin: 0;">🥧 Notas por Status</h3></div>
+        <div style="padding: 20px;"><canvas id="statusChart"></canvas></div>
     </div>
     <div class="table-wrap">
-        <div class="table-head">
-            <h3 style="margin: 0;">📈 Faturamento — Últimos 30 dias</h3>
-        </div>
-        <div style="padding: 20px;">
-            <canvas id="dailyChart"></canvas>
-        </div>
+        <div class="table-head"><h3 style="margin: 0;">📈 Faturamento — Últimos 30 dias</h3></div>
+        <div style="padding: 20px;"><canvas id="dailyChart"></canvas></div>
     </div>
 </div>
 
 <div class="grid-2" style="margin-bottom: 24px;">
     <div class="table-wrap">
-        <div class="table-head">
-            <h3 style="margin: 0;">📉 Faturamento por Mês (últimos 12 meses)</h3>
-        </div>
-        <div style="padding: 20px;">
-            <canvas id="monthlyChart"></canvas>
-        </div>
+        <div class="table-head"><h3 style="margin: 0;">📉 Faturamento por Mês (últimos 12 meses)</h3></div>
+        <div style="padding: 20px;"><canvas id="monthlyChart"></canvas></div>
     </div>
     <div class="table-wrap">
-        <div class="table-head">
-            <h3 style="margin: 0;">📋 Resumo Anual</h3>
-        </div>
-        <table style="width: 100%;">
-            <thead style="background: #FAFBFC;">
-            <tr>
-                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Ano</th>
-                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Notas</th>
-                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for y in yearly %}
-            <tr style="border-bottom: 1px solid var(--border-soft);">
-                <td style="padding: 12px 16px; font-weight: 700; color: var(--text);">{{ y.year|date:"Y" }}</td>
-                <td style="padding: 12px 16px;"><span class="badge badge-blue">{{ y.count }}</span></td>
-                <td style="padding: 12px 16px; font-weight: 700; color: var(--text);">R$ {{ y.total|currency_pt }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-head"><h3 style="margin: 0;">📋 Resumo Anual</h3></div>
+        <table style="width: 100%;"><thead style="background: #FAFBFC;"><tr><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Ano</th><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Notas</th><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th></tr></thead><tbody>{% for y in yearly %}<tr style="border-bottom: 1px solid var(--border-soft);"><td style="padding: 12px 16px; font-weight: 700; color: var(--text);">{{ y.year|date:"Y" }}</td><td style="padding: 12px 16px;"><span class="badge badge-blue">{{ y.count }}</span></td><td style="padding: 12px 16px; font-weight: 700; color: var(--text);">R$ {{ y.total|currency_pt }}</td></tr>{% endfor %}</tbody></table>
     </div>
 </div>
 
 <div class="table-wrap">
-    <div class="table-head">
-        <h3 style="margin: 0;">🔄 Detalhes das Últimas Movimentações</h3>
-    </div>
-    <table style="width: 100%;">
-        <thead style="background: #FAFBFC;">
-        <tr>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">#</th>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Data</th>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Qtd</th>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for d in daily %}
-        <tr style="border-bottom: 1px solid var(--border-soft);">
-            <td style="padding: 12px 16px; color: var(--text-sub);">{{ forloop.counter }}</td>
-            <td style="padding: 12px 16px; color: var(--text-sub);">{{ d.day|slice:":10" }}</td>
-            <td style="padding: 12px 16px;"><span class="badge badge-green">{{ d.count }}</span></td>
-            <td style="padding: 12px 16px; font-weight: 700; color: var(--text);">R$ {{ d.total|currency_pt }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-head"><h3 style="margin: 0;">🔄 Detalhes das Últimas Movimentações</h3></div>
+    <table style="width: 100%;"><thead style="background: #FAFBFC;"><tr><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">#</th><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Data</th><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Qtd</th><th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th></tr></thead><tbody>{% for d in daily %}<tr style="border-bottom: 1px solid var(--border-soft);"><td style="padding: 12px 16px; color: var(--text-sub);">{{ forloop.counter }}</td><td style="padding: 12px 16px; color: var(--text-sub);">{{ d.day|slice:":10" }}</td><td style="padding: 12px 16px;"><span class="badge badge-green">{{ d.count }}</span></td><td style="padding: 12px 16px; font-weight: 700; color: var(--text);">R$ {{ d.total|currency_pt }}</td></tr>{% endfor %}</tbody></table>
 </div>
 
-<script type="application/json" id="invoicesData">{{invoices_json|safe}}</script>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -142,7 +317,6 @@
       }
     };
 
-    // ===== PIE: Notas por Status =====
     const statusLabels = {{ status_labels|safe }};
     const statusData = {{ status_data|safe }};
     const ctxStatus = document.getElementById('statusChart');
@@ -161,11 +335,7 @@
           ...defaultOpts, cutout: '60%',
           plugins: {
             ...defaultOpts.plugins,
-            legend: { ...defaultOpts.plugins.legend, position: 'bottom' },
-            tooltip: {
-              ...defaultOpts.plugins.tooltip,
-              callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' notas' }
-            }
+            legend: { ...defaultOpts.plugins.legend, position: 'bottom' }
           }
         }
       });
@@ -228,13 +398,6 @@
             scales: {
               y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
               x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
-            },
-            plugins: {
-              ...defaultOpts.plugins,
-              tooltip: {
-                ...defaultOpts.plugins.tooltip,
-                callbacks: { label: ctx => 'R$ ' + Number(ctx.parsed.y).toFixed(2) }
-              }
             }
           }
         });
@@ -243,116 +406,3 @@
 </script>
 {% endblock %}
 
-    const defaultOpts = {
-      responsive: true,
-      plugins: {
-        legend: { labels: { font: { family: "'Plus Jakarta Sans'", weight: 600, size: 12 }, padding: 16, usePointStyle: true } },
-        tooltip: {
-          backgroundColor: '#fff', titleColor: '#1a1d2e', bodyColor: '#1a1d2e',
-          borderColor: '#e8eaf0', borderWidth: 1, cornerRadius: 12,
-          titleFont: { family: "'Plus Jakarta Sans'", weight: 700 },
-          bodyFont: { family: "'Plus Jakarta Sans'" },
-          padding: 12, boxPadding: 6
-        }
-      }
-    };
-
-    // ===== PIE: Notas por Status =====
-    const statusLabels = {{ status_labels|safe }};
-    const statusData = {{ status_data|safe }};
-    const ctxStatus = document.getElementById('statusChart');
-    if (ctxStatus) {
-      new Chart(ctxStatus, {
-        type: 'doughnut',
-        data: {
-          labels: statusLabels,
-          datasets: [{
-            data: statusData,
-            backgroundColor: [COLORS.blue, COLORS.accent, COLORS.danger, COLORS.muted],
-            borderWidth: 0, hoverOffset: 8
-          }]
-        },
-        options: {
-          ...defaultOpts, cutout: '60%',
-          plugins: {
-            ...defaultOpts.plugins,
-            legend: { ...defaultOpts.plugins.legend, position: 'bottom' },
-            tooltip: {
-              ...defaultOpts.plugins.tooltip,
-              callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' notas' }
-            }
-          }
-        }
-      });
-    }
-
-    const dailyRaw = JSON.parse('{{ daily_json|escapejs }}');
-    const dailyLabels = dailyRaw.map(d => d.day.slice(0, 10));
-    const dailyData = dailyRaw.map(d => d.total || 0);
-    const ctxDaily = document.getElementById('dailyChart');
-    if (ctxDaily) {
-      if (!dailyData.length) {
-        ctxDaily.parentElement.innerHTML = '<div class="empty-state"><span class="icon">📭</span>Sem dados para os últimos 30 dias.</div>';
-      } else {
-        new Chart(ctxDaily, {
-          type: 'line',
-          data: {
-            labels: dailyLabels,
-            datasets: [{
-              label: 'Faturamento',
-              data: dailyData,
-              borderColor: COLORS.blue, backgroundColor: COLORS.blueBg,
-              tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: COLORS.blue, borderWidth: 2.5
-            }]
-          },
-          options: {
-            ...defaultOpts,
-            scales: {
-              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
-              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
-            }
-          }
-        });
-      }
-    }
-
-    const monthlyRaw = JSON.parse('{{ monthly_json|escapejs }}');
-    const monthlyLabels = monthlyRaw.map(m => {
-      try { return new Date(m.month).toLocaleString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', ''); }
-      catch(e) { return (m.month || '').slice(0, 7); }
-    });
-    const monthlyData = monthlyRaw.map(m => m.total || 0);
-    const ctxMonthly = document.getElementById('monthlyChart');
-    if (ctxMonthly) {
-      if (!monthlyData.length) {
-        ctxMonthly.parentElement.innerHTML = '<div class="empty-state"><span class="icon">📭</span>Sem dados mensais.</div>';
-      } else {
-        new Chart(ctxMonthly, {
-          type: 'line',
-          data: {
-            labels: monthlyLabels,
-            datasets: [{
-              label: 'Faturamento (mensal)',
-              data: monthlyData,
-              borderColor: COLORS.primary, backgroundColor: COLORS.primaryBg,
-              tension: 0.36, fill: true, pointRadius: 4, pointBackgroundColor: COLORS.primary, borderWidth: 2.5
-            }]
-          },
-          options: {
-            ...defaultOpts,
-            scales: {
-              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
-              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
-            },
-            plugins: {
-              ...defaultOpts.plugins,
-              tooltip: {
-                ...defaultOpts.plugins.tooltip,
-                callbacks: { label: ctx => 'R$ ' + Number(ctx.parsed.y).toFixed(2) }
-              }
-            }
-          }
-        });
-      }
-    }
-</script>

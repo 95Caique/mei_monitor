@@ -11,7 +11,7 @@
     </h1>
     <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px 0;">Análise completa do faturamento e notas fiscais</p>
     <div style="background: var(--blue-bg); color: var(--blue); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-weight: 500;">
-        🏢 {{ empresa.razao_social }} — {{ empresa.cnpj }}
+        🏢 {{ empresa.razao_social }} — {{ empresa.cnpj|format_cnpj }}
     </div>
 </div>
 

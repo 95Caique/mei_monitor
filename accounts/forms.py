@@ -88,6 +88,7 @@ class RegisterForm(UserCreationForm):
 
         blacklist = {
             "email@email.com",
+            "email@gmail.com",
             "test@test.com",
             "admin@admin.com"
         }

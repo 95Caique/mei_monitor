@@ -50,3 +50,23 @@ def currency_pt(value):
         return f"{sign}{int_str},{frac:02d}"
     except Exception:
         return str(value)
+
+
+@register.filter
+def format_cnpj(value):
+    """Format a CNPJ string to XX.XXX.XXX/XXXX-XX format
+    Input: 89047826000110
+    Output: 89.047.826/0001-10
+    """
+    if not value:
+        return value
+    
+    # Remove non-digits
+    cnpj = str(value).replace('.', '').replace('/', '').replace('-', '')
+    
+    # Validate length
+    if len(cnpj) != 14:
+        return value
+    
+    # Format: XX.XXX.XXX/XXXX-XX
+    return f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}"

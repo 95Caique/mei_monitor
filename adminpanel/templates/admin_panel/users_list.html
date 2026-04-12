@@ -41,7 +41,7 @@
           <td>
             {% if empresa %}
             <div>{{ empresa.razao_social }}</div>
-            <div class="small text-muted">{{ empresa.cnpj }}</div>
+            <div class="small text-muted">{{ empresa.cnpj|format_cnpj }}</div>
             {% else %}
             <span class="text-muted">— sem empresa —</span>
             {% endif %}
@@ -102,7 +102,7 @@
         <div class="mb-2" style="border-top: 1px solid #dee2e6; padding-top: 0.75rem;">
           <div class="small text-muted">Empresa</div>
           <div class="fw-500">{{ empresa.razao_social }}</div>
-          <div class="small text-muted">{{ empresa.cnpj }}</div>
+          <div class="small text-muted">{{ empresa.cnpj|format_cnpj }}</div>
         </div>
         {% else %}
         <div class="small text-muted" style="border-top: 1px solid #dee2e6; padding-top: 0.75rem;">— sem empresa —</div>

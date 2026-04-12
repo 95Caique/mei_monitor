@@ -162,3 +162,54 @@ class RegisterForm(UserCreationForm):
         )
 
         return user
+
+
+class UserProfileForm(forms.ModelForm):
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'placeholder': 'seu@email.com', 'class': 'form-control'}))
+    telefone = forms.CharField(required=False, max_length=11, widget=forms.TextInput(attrs={'placeholder': '(62) 99999-9999', 'class': 'form-control'}))
+    avatar = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}))
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'first_name', 'last_name', 'telefone', 'avatar']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'placeholder': 'Seu primeiro nome', 'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'placeholder': 'Seu sobrenome', 'class': 'form-control'}),
+        }
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if avatar:
+            if avatar.size > 5 * 1024 * 1024:
+                raise ValidationError("Imagem muito grande. Máximo 5MB.")
+            if avatar in ['image/jpeg', 'image/png', 'image/gif', 'image/webp']:
+                raise ValidationError("Formato não suportado. Use JPG, PNG, GIF ou WebP.")
+        return avatar
+
+
+class ChangePasswordForm(forms.Form):
+    current_password = forms.CharField(label="Senha Atual", widget=forms.PasswordInput(attrs={'placeholder': 'Digite sua senha atual', 'class': 'form-control'}))
+    new_password1 = forms.CharField(label="Nova Senha", widget=forms.PasswordInput(attrs={'placeholder': 'Digite sua nova senha', 'class': 'form-control'}))
+    new_password2 = forms.CharField(label="Confirmar Nova Senha", widget=forms.PasswordInput(attrs={'placeholder': 'Confirme sua nova senha', 'class': 'form-control'}))
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_current_password(self):
+        current_password = self.cleaned_data.get('current_password')
+        if not self.user.check_password(current_password):
+            raise ValidationError("Senha atual está incorreta.")
+        return current_password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password1 = cleaned_data.get('new_password1')
+        new_password2 = cleaned_data.get('new_password2')
+        if new_password1 and new_password2:
+            if new_password1 != new_password2:
+                raise ValidationError("As senhas não coincidem.")
+            if len(new_password1) < 8:
+                raise ValidationError("A senha deve ter no mínimo 8 caracteres.")
+        return cleaned_data
+

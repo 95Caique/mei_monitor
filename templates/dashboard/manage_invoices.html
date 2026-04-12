@@ -6,7 +6,7 @@
 {% block content %}
 <div style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center;">
     <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px;">
-        📋 Gerenciar Notas Fiscais
+        <i class="fa-solid fa-book-open"></i> Gerenciar Notas Fiscais
     </h1>
     <a href="{% url 'create_invoice' %}" class="btn btn-primary">
         + Nova Nota
@@ -70,8 +70,16 @@
         </div>
 
         <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">🔍 Filtrar</button>
-            <a href="{% url 'manage_invoices' %}" class="btn btn-secondary" style="flex: 1; text-align: center;">Limpar</a>
+
+            <button type="submit" class="btn btn-primary"
+                style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                Filtrar
+            </button>
+
+            <a href="{% url 'manage_invoices' %}" class="btn btn-secondary"
+                style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                Limpar
+            </a>
         </div>
     </form>
 </div>

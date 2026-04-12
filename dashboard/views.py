@@ -169,7 +169,7 @@ def create_invoice(request):
             # checar unicidade: não permitir same invoice_id para a mesma empresa
             invoice_id = form.cleaned_data.get('invoice_id')
             if empresa.invoices.filter(invoice_id=invoice_id).exists():
-                form.add_error('invoice_id', 'Já existe uma nota com esse ID para a sua empresa.')
+                form.add_error('invoice_id', 'Já existe uma nota com esse nome para a sua empresa.')
             else:
                 invoice = form.save(commit=False)
                 invoice.empresa = empresa

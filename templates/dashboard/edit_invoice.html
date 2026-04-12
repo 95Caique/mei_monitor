@@ -1,123 +1,153 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static labels %}
 
 {% block title %}Editar Nota - MEI Monitor{% endblock %}
 
-{% block extra_css %}
-{% endblock %}
-
 {% block content %}
 <div class="invoice-page">
-
-  <!-- HERO -->
-  <div class="invoice-hero">
-    <div class="hero-content">
-      <div class="hero-breadcrumb">
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <span>›</span>
-        <a href="{% url 'manage_invoices' %}">Gerenciar Notas</a>
-        <span>›</span>
-        <span>Editar Nota</span>
-      </div>
-      <h1>✏️ Editar Nota</h1>
-      <p class="hero-sub">Modifique os dados da nota fiscal {{ invoice.invoice_id }}.</p>
-    </div>
-  </div>
-
-  <!-- GRID -->
-  <div class="form-grid">
-
-    <!-- FORMULÁRIO -->
-    <div class="form-card">
-      <div class="form-section-title">
-        <span>📝</span> Dados da Nota
-      </div>
-
-      <form method="post">
-        {% csrf_token %}
-
-        {% for field in form %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">
-            {{ field.label }}
-            {% if field.field.required %}<span class="req">*</span>{% endif %}
-          </label>
-          {{ field }}
-          {% if field.help_text %}
-            <p class="helptext">{{ field.help_text }}</p>
-          {% endif %}
-          {% if field.errors %}
-            <ul class="errorlist">
-              {% for error in field.errors %}
-              <li>⚠ {{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
+    <!-- HERO -->
+    <div class="invoice-hero">
+        <div class="hero-content">
+            <div class="hero-breadcrumb">
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <span>›</span>
+                <a href="{% url 'manage_invoices' %}">Gerenciar Notas</a>
+                <span>›</span>
+                <span>Editar Nota</span>
+            </div>
+            <h1><i class="fa-solid fa-pencil"></i> Editar Nota Fiscal # {{ invoice.invoice_id }}</h1>
         </div>
-        {% endfor %}
-
-        <div class="form-actions">
-          <button type="submit" class="btn-submit">
-            <span>💾</span> Salvar Alterações
-          </button>
-          <a href="{% url 'manage_invoices' %}" class="btn-back">← Voltar</a>
-        </div>
-      </form>
     </div>
 
-    <!-- SIDEBAR INFORMAÇÕES -->
-    <div>
-      <div class="preview-card">
-        <h3><span>ℹ️</span> Informações da Nota</h3>
-        <div class="preview-line">
-          <span class="preview-label">ID Original:</span>
-          <span class="preview-value">{{ invoice.invoice_id }}</span>
-        </div>
-        <div class="preview-line">
-          <span class="preview-label">Criada em:</span>
-          <span class="preview-value">{{ invoice.created_at|date:"d/m/Y H:i" }}</span>
-        </div>
-        <div class="preview-line">
-          <span class="preview-label">Última modificação:</span>
-          <span class="preview-value">{{ invoice.updated_at|date:"d/m/Y H:i" }}</span>
-        </div>
-        <div class="preview-line">
-          <span class="preview-label">Status atual:</span>
-          <span class="preview-value">
-            <span class="badge bg-{% if invoice.status == 'ISSUED' %}success{% elif invoice.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
-              {% if invoice.status == 'ISSUED' %}Emitida{% elif invoice.status == 'CANCELLED' %}Cancelada{% else %}Rascunho{% endif %}
-            </span>
-          </span>
-        </div>
-      </div>
+    <!-- GRID -->
+    <div class="form-grid">
+        <!-- FORMULÁRIO -->
+        <div class="form-card">
+            <div class="form-section-title">Dados da Nota</div>
 
-      <div class="tips-card">
-        <h4>💡 Atenção</h4>
-        <ul>
-          <li><strong>Mudança de status:</strong> Alterar o status pode impactar seus relatórios e cálculos do limite MEI</li>
-          <li><strong>Valor:</strong> Mudanças no valor podem gerar novos alertas de proximidade do limite</li>
-          <li><strong>ID da nota:</strong> Certifique-se de que o novo ID não conflita com outras notas</li>
-          <li><strong>Notificações:</strong> Alterações importantes geram alertas automáticos</li>
-        </ul>
-      </div>
+            <form method="post">
+                {% csrf_token %}
 
-      <div class="preview-card">
-        <h4>🔄 Outras Ações</h4>
-        <div class="d-grid gap-2">
-          {% if invoice.status != 'CANCELLED' %}
-          <a href="{% url 'cancel_invoice' invoice.id %}?page={{ request.GET.page|default:1 }}" class="action-link action-cancel">
-            ❌ Cancelar Nota
-          </a>
-          {% endif %}
-          <a href="{% url 'delete_invoice' invoice.id %}"
-             class="action-link action-delete"
-             onclick="return confirm('Tem certeza que deseja excluir esta nota permanentemente?')">
-            🗑️ Excluir Nota
-          </a>
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="req">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+                    {% if field.errors %}
+                    <ul class="errorlist">
+                        {% for error in field.errors %}
+                        <li>⚠ {{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <div class="info-card">
+                <h3>Informações da Nota</h3>
+
+                <div class="info-row">
+                    <span class="info-label">ID</span>
+                    <div class="info-value highlight">{{ invoice.invoice_id }}</div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Criada em</span>
+                    <div class="info-value">{{ invoice.created_at|date:"d/m/Y H:i" }}</div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Última modificação</span>
+                    <div class="info-value">{{ invoice.updated_at|date:"d/m/Y H:i" }}</div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <div>
+                        {% if invoice.status == 'ISSUED' %}
+                            <span class="status-badge status-issued">Emitida</span>
+                        {% elif invoice.status == 'CANCELLED' %}
+                            <span class="status-badge status-cancelled">Cancelada</span>
+                        {% else %}
+                            <span class="status-badge status-draft">Rascunho</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Salvar Alterações</button>
+                    <a href="{% url 'manage_invoices' %}" class="btn-back">← Voltar</a>
+                </div>
+            </form>
         </div>
-      </div>
+
+        <!-- SIDEBAR -->
+        <div>
+            <!-- Info Card -->
+<!--            <div class="info-card">-->
+<!--                <h3>Informações da Nota</h3>-->
+
+<!--                <div class="info-row">-->
+<!--                    <span class="info-label">ID</span>-->
+<!--                    <div class="info-value highlight">{{ invoice.invoice_id }}</div>-->
+<!--                </div>-->
+
+<!--                <div class="info-row">-->
+<!--                    <span class="info-label">Criada em</span>-->
+<!--                    <div class="info-value">{{ invoice.created_at|date:"d/m/Y H:i" }}</div>-->
+<!--                </div>-->
+
+<!--                <div class="info-row">-->
+<!--                    <span class="info-label">Última modificação</span>-->
+<!--                    <div class="info-value">{{ invoice.updated_at|date:"d/m/Y H:i" }}</div>-->
+<!--                </div>-->
+
+<!--                <div class="info-row">-->
+<!--                    <span class="info-label">Status</span>-->
+<!--                    <div>-->
+<!--                        {% if invoice.status == 'ISSUED' %}-->
+<!--                            <span class="status-badge status-issued">Emitida</span>-->
+<!--                        {% elif invoice.status == 'CANCELLED' %}-->
+<!--                            <span class="status-badge status-cancelled">Cancelada</span>-->
+<!--                        {% else %}-->
+<!--                            <span class="status-badge status-draft">Rascunho</span>-->
+<!--                        {% endif %}-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+            <!-- Tips Card -->
+            <div class="tips-card">
+                <h4>Atenção</h4>
+                <ul>
+                    <li>Mudanças de status afetam seus cálculos do limite MEI</li>
+                    <li>Alterações no valor geram novos alertas</li>
+                    <li>Certifique-se de não duplicar IDs de notas</li>
+                </ul>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="info-card">
+                <h4>Outras Ações</h4>
+                <div class="action-buttons">
+                    {% if invoice.status != 'CANCELLED' %}
+                    <a href="{% url 'cancel_invoice' invoice.id %}?page={{ request.GET.page|default:1 }}" class="action-btn">
+                        Cancelar Nota
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'delete_invoice' invoice.id %}"
+                        onclick="return confirm('Tem certeza que deseja excluir esta nota permanentemente?')"
+                        class="action-btn danger">
+                        Excluir Nota
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-
-  </div>
 </div>
 {% endblock %}
+
+

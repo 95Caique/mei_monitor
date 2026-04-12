@@ -2052,3 +2052,174 @@ hr {
     max-height: 60vh;
   }
 }
+
+/* ─── Info Cards ─── */
+.info-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card h3,
+.info-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+}
+
+.info-row {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.info-value {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.info-value.highlight {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ─── Badges Status ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-issued {
+  background: #DCFCE7;
+  color: #16A34A;
+  border-color: #bbf7d0;
+}
+
+.status-issued::before {
+  background: #16A34A;
+}
+
+.status-cancelled {
+  background: #FEE2E2;
+  color: #DC2626;
+  border-color: #fecaca;
+}
+
+.status-cancelled::before {
+  background: #DC2626;
+}
+
+.status-draft {
+  background: #FEF3C7;
+  color: #B45309;
+  border-color: #fde68a;
+}
+
+.status-draft::before {
+  background: #B45309;
+}
+
+/* ─── Tips Card ─── */
+.tips-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--yellow);
+}
+
+.tips-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.tips-card ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.tips-card li {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.tips-card li:last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Action Buttons ─── */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-btn {
+  display: block;
+  padding: 10px 16px;
+  text-align: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-sub);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: var(--bg);
+}
+
+.action-btn.danger {
+  border-color: #fecaca;
+  color: var(--red);
+}
+
+.action-btn.danger:hover {
+  background: #FEE2E2;
+}
+

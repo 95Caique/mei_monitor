@@ -35,7 +35,7 @@ class InvoiceForm(forms.ModelForm):
         if self.empresa is not None:
             from .models import Invoice
             if Invoice.objects.filter(empresa=self.empresa, invoice_id=invoice_id).exists():
-                raise forms.ValidationError('Já existe uma nota com esse ID para a sua empresa.')
+                raise forms.ValidationError('Já existe uma nota com esse nome para a sua empresa.')
         return invoice_id
 
 
@@ -54,12 +54,11 @@ class InvoiceEditForm(forms.ModelForm):
         if not invoice_id:
             return invoice_id
 
-        # Só validar unicidade se o invoice_id mudou
         if self.instance and self.instance.invoice_id == invoice_id:
             return invoice_id
 
         if self.empresa is not None:
             from .models import Invoice
             if Invoice.objects.filter(empresa=self.empresa, invoice_id=invoice_id).exists():
-                raise forms.ValidationError('Já existe uma nota com esse ID para a sua empresa.')
+                raise forms.ValidationError('Já existe uma nota com esse nome para a sua empresa.')
         return invoice_id

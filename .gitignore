@@ -48,3 +48,4 @@ staticfiles/
 .DS_Store
 Thumbs.db
 dados.json
+SKILLS.md

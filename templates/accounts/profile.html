@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meu Perfil - MEI Monitor{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 800px; margin: 0 auto; padding: 24px 0;">
+
+    <!-- Header -->
+    <div style="margin-bottom: 32px;">
+        <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.4px;">
+             <i class="fa-regular fa-circle-user"></i> Meu Perfil
+        </h1>
+        <p style="color: var(--text-muted); font-size: 14px;">Gerencie suas informações e segurança da conta</p>
+    </div>
+
+    <!-- Foto de Perfil e Info Básica -->
+    <div style="margin-bottom: 32px; padding: 24px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; gap: 24px; align-items: flex-start;">
+
+            <!-- Avatar -->
+            <div style="flex-shrink: 0;">
+                <div style="position: relative; width: 120px; height: 120px;">
+                    {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}?v={{ request.user.modificado_em|date:'Usmsuuuuuuu' }}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; border: 3px solid var(--accent);">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; font-weight: 700; font-family: var(--font-display);">
+                            {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Infos -->
+            <div style="flex: 1;">
+                <h2 style="font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text); margin: 0 0 4px 0; letter-spacing: -.4px;">
+                    {{ request.user.first_name }} {{ request.user.last_name }}
+                </h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 12px 0;">@{{ request.user.username }}</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px;">Email</div>
+                        <p style="color: var(--text-sub); font-size: 13px; margin: 0;">{{ request.user.email }}</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px;">Telefone</div>
+                        <p style="color: var(--text-sub); font-size: 13px; margin: 0;">{{ request.user.telefone|default:"Não informado" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário de Perfil -->
+    <div style="margin-bottom: 32px; padding: 24px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm);">
+        <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 20px 0; letter-spacing: -.4px;">
+            <i class="fa-solid fa-pencil"></i> Editar Informações
+        </h3>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="profile-form" value="1">
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ form.first_name.label }}
+                </label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ form.first_name.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ form.last_name.label }}
+                </label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ form.last_name.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ form.email.label }}
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ form.email.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ form.telefone.label }}
+                </label>
+                {{ form.telefone }}
+                {% if form.telefone.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ form.telefone.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ form.avatar.label }}
+                </label>
+                {{ form.avatar }}
+                <small style="color: var(--text-muted); font-size: 11px; display: block; margin-top: 6px;">
+                    Máximo 5MB. Formatos: JPG, PNG, GIF
+                </small>
+                {% if form.avatar.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ form.avatar.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                style="width: 20%; padding: 12px; display: flex; justify-content: center; align-items: center;">
+                Salvar Alterações
+            </button>
+        </form>
+    </div>
+
+    <!-- Formulário de Senha -->
+    <div style="margin-bottom: 32px; padding: 24px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm);">
+        <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 20px 0; letter-spacing: -.4px;">
+            <i class="fa-solid fa-lock"></i> Alterar senha
+        </h3>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="password-form" value="1">
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ password_form.current_password.label }}
+                </label>
+                {{ password_form.current_password }}
+                {% if password_form.current_password.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ password_form.current_password.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ password_form.new_password1.label }}
+                </label>
+                {{ password_form.new_password1 }}
+                {% if password_form.new_password1.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ password_form.new_password1.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;">
+                    {{ password_form.new_password2.label }}
+                </label>
+                {{ password_form.new_password2 }}
+                {% if password_form.new_password2.errors %}
+                    <span style="color: var(--red); font-size: 12px; margin-top: 4px; display: block;">
+                        {{ password_form.new_password2.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+
+            {% if password_form.non_field_errors %}
+                <div style="padding: 12px; background: var(--red-bg); color: var(--red); border-radius: 8px; margin-bottom: 16px; font-size: 12px;">
+                    {% for error in password_form.non_field_errors %}
+                        <p style="margin: 0;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+             <button type="submit" class="btn btn-primary"
+                style="width: 20%; padding: 12px; display: flex; justify-content: center; align-items: center;">
+                Alterar Senha
+            </button>
+        </form>
+
+        <div style="margin-top: 16px; padding: 12px; background: var(--blue-bg); border-radius: 8px; color: var(--blue); font-size: 12px;">
+            <strong>Dica:</strong> Use uma senha com pelo menos 8 caracteres, números e caracteres especiais para maior segurança.
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: var(--font-base);
+        background: var(--surface);
+        color: var(--text);
+        transition: border-color .2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59, 91, 219, .08);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    input[type="file"].form-control {
+        padding: 8px 12px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            // Aguardar o envio e recarregar após sucesso
+            const originalSubmit = form.onsubmit;
+
+            setTimeout(() => {
+                // Recarregar página com cache busting
+                window.location.href = window.location.href + '?t=' + new Date().getTime();
+            }, 500);
+        });
+    });
+
+    // Pré-visualização de imagem antes de fazer upload
+    const avatarInput = document.querySelector('input[name="avatar"]');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imgElements = document.querySelectorAll('img[alt="Avatar"]');
+                    imgElements.forEach(img => {
+                        img.src = event.target.result;
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}
+

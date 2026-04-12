@@ -186,6 +186,16 @@ class UserProfileForm(forms.ModelForm):
                 raise ValidationError("Formato não suportado. Use JPG, PNG, GIF ou WebP.")
         return avatar
 
+    def clean_telefone(self):
+        telefone = self.cleaned_data.get('telefone', '')
+        if not telefone:
+            return ''
+        import re
+        digits = re.sub(r"\D", "", telefone)
+        if digits and len(digits) != 11:
+            raise ValidationError('Telefone deve ter 11 dígitos.')
+        return telefone
+
 
 class ChangePasswordForm(forms.Form):
     current_password = forms.CharField(label="Senha Atual", widget=forms.PasswordInput(attrs={'placeholder': 'Digite sua senha atual', 'class': 'form-control'}))

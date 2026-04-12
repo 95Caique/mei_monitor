@@ -41,15 +41,20 @@ class User(AbstractUser):
     modificado_em = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Primeiro, salvar normalmente
+        if self.telefone:
+            import re
+            digits = re.sub(r"\D", "", self.telefone)
+            if len(digits) == 11:
+                self.telefone = f"({digits[:2]}) {digits[2:7]}-{digits[7:11]}"
+            elif len(digits) > 0:
+                self.telefone = digits
+        
         super().save(*args, **kwargs)
         
-        # Depois converter para WebP se necessário
         if self.avatar and not self.avatar.name.lower().endswith('.webp'):
             try:
                 img = Image.open(self.avatar.path)
                 
-                # Converter para RGB se necessário
                 if img.mode in ('RGBA', 'LA', 'P'):
                     rgb_img = Image.new('RGB', img.size, (255, 255, 255))
                     if img.mode == 'RGBA':
@@ -60,14 +65,11 @@ class User(AbstractUser):
                 elif img.mode != 'RGB':
                     img = img.convert('RGB')
                 
-                # Redimensionar
                 img.thumbnail((500, 500), Image.Resampling.LANCZOS)
                 
-                # Salvar como WebP
                 webp_path = os.path.splitext(self.avatar.path)[0] + '.webp'
                 img.save(webp_path, format='WEBP', quality=85, method=6)
                 
-                # Deletar arquivo original
                 if self.avatar.path != webp_path and os.path.isfile(self.avatar.path):
                     os.remove(self.avatar.path)
                 
@@ -76,14 +78,12 @@ class User(AbstractUser):
                 new_name = f'{base_name}.webp'
                 self.avatar.name = new_name
                 
-                # Salvar referência atualizada no banco
                 User.objects.filter(pk=self.pk).update(avatar=new_name)
                 
             except Exception as e:
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.error(f"Erro ao converter para WebP: {str(e)}")
-                # Não lançar exceção, deixar como está
 
     def __str__(self):
         return self.username

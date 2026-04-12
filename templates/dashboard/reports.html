@@ -18,16 +18,26 @@
 <div style="margin-bottom: 24px; padding: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 10px;">
     <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
         <div>
-            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;">Data Início</label>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom:
+            6px; text-transform: uppercase; letter-spacing: .07em;"> <i class="fa-solid fa-calendar"></i> Data Início</label>
             <input type="date" name="start" value="{{ start_date }}" style="width: 100%;">
         </div>
         <div>
-            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;">Data Fim</label>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;"><i class="fa-solid fa-calendar"></i> Data Fim </label>
             <input type="date" name="end" value="{{ end_date }}" style="width: 100%;">
         </div>
         <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">🔍 Filtrar</button>
-            <a href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}" class="btn btn-secondary" style="flex: 1; text-align: center;">📥 Exportar</a>
+
+            <button type="submit" class="btn btn-primary"
+                style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                Filtrar
+            </button>
+
+            <a href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}"
+               class="btn btn-secondary"
+               style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-file-csv"></i> Exportar CSV
+            </a>
         </div>
     </form>
 </div>

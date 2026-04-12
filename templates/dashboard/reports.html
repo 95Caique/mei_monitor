@@ -7,11 +7,12 @@
 {% block content %}
 <div style="margin-bottom: 32px;">
     <h1 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.4px; margin: 0 0 8px 0;">
-        📊 Relatórios
+        <i class="fa-solid fa-chart-simple"></i> Relatórios
     </h1>
-    <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px 0;">Análise completa do faturamento e notas fiscais</p>
-    <div style="background: var(--blue-bg); color: var(--blue); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-weight: 500;">
-        🏢 {{ empresa.razao_social }} — {{ empresa.cnpj|format_cnpj }}
+    <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px 0;">Análise completa do faturamento e notas
+        fiscais</p>
+    <div style="padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-weight: 500;">
+        {{ empresa.razao_social }} — {{ empresa.cnpj|format_cnpj }}
     </div>
 </div>
 
@@ -19,24 +20,29 @@
     <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
         <div>
             <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom:
-            6px; text-transform: uppercase; letter-spacing: .07em;"> <i class="fa-solid fa-calendar"></i> Data Início</label>
+            6px; text-transform: uppercase; letter-spacing: .07em;"> <i class="fa-solid fa-calendar"></i> Data
+                Início</label>
             <input type="date" name="start" value="{{ start_date }}" style="width: 100%;">
         </div>
         <div>
-            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;"><i class="fa-solid fa-calendar"></i> Data Fim </label>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em;"><i
+                    class="fa-solid fa-calendar"></i> Data Fim </label>
             <input type="date" name="end" value="{{ end_date }}" style="width: 100%;">
         </div>
-        <div style="display: flex; gap: 8px; align-items: flex-end;">
+        <div class="actions-container">
 
-            <button type="submit" class="btn btn-primary"
-                style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px;">
+            <button type="submit" class="btn btn-secondary btn-action">
                 Filtrar
             </button>
 
             <a href="{% url 'reports_export' %}?start={{ start_date }}&end={{ end_date }}"
-               class="btn btn-secondary"
-               style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-file-csv"></i> Exportar CSV
+               class="btn btn-secondary btn-action">
+                <i class="fa-solid fa-file-csv"></i> Exportar CSV
+            </a>
+
+            <a href="{% url 'reports_export_pdf' %}?start={{ start_date }}&end={{ end_date }}"
+               class="btn btn-secondary btn-action">
+                <i class="fa-solid fa-file-pdf"></i> Exportar PDF
             </a>
         </div>
     </form>
@@ -77,9 +83,15 @@
         <table style="width: 100%;">
             <thead style="background: #FAFBFC;">
             <tr>
-                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Ano</th>
-                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Notas</th>
-                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th>
+                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                    Ano
+                </th>
+                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                    Notas
+                </th>
+                <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                    Total
+                </th>
             </tr>
             </thead>
             <tbody>
@@ -102,10 +114,18 @@
     <table style="width: 100%;">
         <thead style="background: #FAFBFC;">
         <tr>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">#</th>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Data</th>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Qtd</th>
-            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">Total</th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                #
+            </th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                Data
+            </th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                Qtd
+            </th>
+            <th style="padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                Total
+            </th>
         </tr>
         </thead>
         <tbody>
@@ -121,7 +141,11 @@
     </table>
 </div>
 
-<script type="application/json" id="invoicesData">{{invoices_json|safe}}</script>
+<script type="application/json" id="invoicesData">{{
+    invoices_json
+    |
+    safe
+}}</script>
 {% endblock %}
 
 {% block extra_js %}
@@ -253,116 +277,118 @@
 </script>
 {% endblock %}
 
-    const defaultOpts = {
-      responsive: true,
-      plugins: {
-        legend: { labels: { font: { family: "'Plus Jakarta Sans'", weight: 600, size: 12 }, padding: 16, usePointStyle: true } },
-        tooltip: {
-          backgroundColor: '#fff', titleColor: '#1a1d2e', bodyColor: '#1a1d2e',
-          borderColor: '#e8eaf0', borderWidth: 1, cornerRadius: 12,
-          titleFont: { family: "'Plus Jakarta Sans'", weight: 700 },
-          bodyFont: { family: "'Plus Jakarta Sans'" },
-          padding: 12, boxPadding: 6
-        }
-      }
-    };
+const defaultOpts = {
+responsive: true,
+plugins: {
+legend: { labels: { font: { family: "'Plus Jakarta Sans'", weight: 600, size: 12 }, padding: 16, usePointStyle: true } },
+tooltip: {
+backgroundColor: '#fff', titleColor: '#1a1d2e', bodyColor: '#1a1d2e',
+borderColor: '#e8eaf0', borderWidth: 1, cornerRadius: 12,
+titleFont: { family: "'Plus Jakarta Sans'", weight: 700 },
+bodyFont: { family: "'Plus Jakarta Sans'" },
+padding: 12, boxPadding: 6
+}
+}
+};
 
-    // ===== PIE: Notas por Status =====
-    const statusLabels = {{ status_labels|safe }};
-    const statusData = {{ status_data|safe }};
-    const ctxStatus = document.getElementById('statusChart');
-    if (ctxStatus) {
-      new Chart(ctxStatus, {
-        type: 'doughnut',
-        data: {
-          labels: statusLabels,
-          datasets: [{
-            data: statusData,
-            backgroundColor: [COLORS.blue, COLORS.accent, COLORS.danger, COLORS.muted],
-            borderWidth: 0, hoverOffset: 8
-          }]
-        },
-        options: {
-          ...defaultOpts, cutout: '60%',
-          plugins: {
-            ...defaultOpts.plugins,
-            legend: { ...defaultOpts.plugins.legend, position: 'bottom' },
-            tooltip: {
-              ...defaultOpts.plugins.tooltip,
-              callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' notas' }
-            }
-          }
-        }
-      });
-    }
+// ===== PIE: Notas por Status =====
+const statusLabels = {{ status_labels|safe }};
+const statusData = {{ status_data|safe }};
+const ctxStatus = document.getElementById('statusChart');
+if (ctxStatus) {
+new Chart(ctxStatus, {
+type: 'doughnut',
+data: {
+labels: statusLabels,
+datasets: [{
+data: statusData,
+backgroundColor: [COLORS.blue, COLORS.accent, COLORS.danger, COLORS.muted],
+borderWidth: 0, hoverOffset: 8
+}]
+},
+options: {
+...defaultOpts, cutout: '60%',
+plugins: {
+...defaultOpts.plugins,
+legend: { ...defaultOpts.plugins.legend, position: 'bottom' },
+tooltip: {
+...defaultOpts.plugins.tooltip,
+callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' notas' }
+}
+}
+}
+});
+}
 
-    const dailyRaw = JSON.parse('{{ daily_json|escapejs }}');
-    const dailyLabels = dailyRaw.map(d => d.day.slice(0, 10));
-    const dailyData = dailyRaw.map(d => d.total || 0);
-    const ctxDaily = document.getElementById('dailyChart');
-    if (ctxDaily) {
-      if (!dailyData.length) {
-        ctxDaily.parentElement.innerHTML = '<div class="empty-state"><span class="icon">📭</span>Sem dados para os últimos 30 dias.</div>';
-      } else {
-        new Chart(ctxDaily, {
-          type: 'line',
-          data: {
-            labels: dailyLabels,
-            datasets: [{
-              label: 'Faturamento',
-              data: dailyData,
-              borderColor: COLORS.blue, backgroundColor: COLORS.blueBg,
-              tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: COLORS.blue, borderWidth: 2.5
-            }]
-          },
-          options: {
-            ...defaultOpts,
-            scales: {
-              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
-              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
-            }
-          }
-        });
-      }
-    }
+const dailyRaw = JSON.parse('{{ daily_json|escapejs }}');
+const dailyLabels = dailyRaw.map(d => d.day.slice(0, 10));
+const dailyData = dailyRaw.map(d => d.total || 0);
+const ctxDaily = document.getElementById('dailyChart');
+if (ctxDaily) {
+if (!dailyData.length) {
+ctxDaily.parentElement.innerHTML = '
+<div class="empty-state"><span class="icon">📭</span>Sem dados para os últimos 30 dias.</div>';
+} else {
+new Chart(ctxDaily, {
+type: 'line',
+data: {
+labels: dailyLabels,
+datasets: [{
+label: 'Faturamento',
+data: dailyData,
+borderColor: COLORS.blue, backgroundColor: COLORS.blueBg,
+tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: COLORS.blue, borderWidth: 2.5
+}]
+},
+options: {
+...defaultOpts,
+scales: {
+y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
+x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
+}
+}
+});
+}
+}
 
-    const monthlyRaw = JSON.parse('{{ monthly_json|escapejs }}');
-    const monthlyLabels = monthlyRaw.map(m => {
-      try { return new Date(m.month).toLocaleString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', ''); }
-      catch(e) { return (m.month || '').slice(0, 7); }
-    });
-    const monthlyData = monthlyRaw.map(m => m.total || 0);
-    const ctxMonthly = document.getElementById('monthlyChart');
-    if (ctxMonthly) {
-      if (!monthlyData.length) {
-        ctxMonthly.parentElement.innerHTML = '<div class="empty-state"><span class="icon">📭</span>Sem dados mensais.</div>';
-      } else {
-        new Chart(ctxMonthly, {
-          type: 'line',
-          data: {
-            labels: monthlyLabels,
-            datasets: [{
-              label: 'Faturamento (mensal)',
-              data: monthlyData,
-              borderColor: COLORS.primary, backgroundColor: COLORS.primaryBg,
-              tension: 0.36, fill: true, pointRadius: 4, pointBackgroundColor: COLORS.primary, borderWidth: 2.5
-            }]
-          },
-          options: {
-            ...defaultOpts,
-            scales: {
-              y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
-              x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
-            },
-            plugins: {
-              ...defaultOpts.plugins,
-              tooltip: {
-                ...defaultOpts.plugins.tooltip,
-                callbacks: { label: ctx => 'R$ ' + Number(ctx.parsed.y).toFixed(2) }
-              }
-            }
-          }
-        });
-      }
-    }
+const monthlyRaw = JSON.parse('{{ monthly_json|escapejs }}');
+const monthlyLabels = monthlyRaw.map(m => {
+try { return new Date(m.month).toLocaleString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', ''); }
+catch(e) { return (m.month || '').slice(0, 7); }
+});
+const monthlyData = monthlyRaw.map(m => m.total || 0);
+const ctxMonthly = document.getElementById('monthlyChart');
+if (ctxMonthly) {
+if (!monthlyData.length) {
+ctxMonthly.parentElement.innerHTML = '
+<div class="empty-state"><span class="icon">📭</span>Sem dados mensais.</div>';
+} else {
+new Chart(ctxMonthly, {
+type: 'line',
+data: {
+labels: monthlyLabels,
+datasets: [{
+label: 'Faturamento (mensal)',
+data: monthlyData,
+borderColor: COLORS.primary, backgroundColor: COLORS.primaryBg,
+tension: 0.36, fill: true, pointRadius: 4, pointBackgroundColor: COLORS.primary, borderWidth: 2.5
+}]
+},
+options: {
+...defaultOpts,
+scales: {
+y: { grid: { color: COLORS.border }, ticks: { callback: v => 'R$ ' + v.toFixed(0), font: { family: "'Plus Jakarta Sans'", size: 11 } } },
+x: { grid: { display: false }, ticks: { font: { family: "'Plus Jakarta Sans'", size: 11 } } }
+},
+plugins: {
+...defaultOpts.plugins,
+tooltip: {
+...defaultOpts.plugins.tooltip,
+callbacks: { label: ctx => 'R$ ' + Number(ctx.parsed.y).toFixed(2) }
+}
+}
+}
+});
+}
+}
 </script>

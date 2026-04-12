@@ -2223,3 +2223,30 @@ hr {
   background: #FEE2E2;
 }
 
+
+.actions-container {
+    display: flex;
+    gap: 8px;
+}
+
+/* Botões padrão (desktop) */
+.btn-action {
+    flex: 1;
+    height: 42px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+
+@media (max-width: 768px) {
+    .btn-action {
+        flex: 1 1 48%;
+    }
+
+    .btn-action:last-child {
+        flex: 1 1 100%;
+    }
+}
+

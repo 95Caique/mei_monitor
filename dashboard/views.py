@@ -11,6 +11,12 @@ from django.utils.dateparse import parse_date
 from django.db.models import Q
 import json
 from django.db import IntegrityError, transaction
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 
 
 from monitor.models import Empresa
@@ -330,6 +336,138 @@ def reports_export(request):
             valor_formatado
         ])
 
+    return response
+
+
+@login_required
+def reports_export_pdf(request):
+    empresa = Empresa.objects.filter(user=request.user).first()
+    if not empresa:
+        return redirect('dashboard')
+
+    start_param = request.GET.get('start')
+    end_param = request.GET.get('end')
+    start_date = parse_date(start_param) if start_param else None
+    end_date = parse_date(end_param) if end_param else None
+
+    qs = empresa.invoices.all()
+    if start_date:
+        qs = qs.filter(created_at__date__gte=start_date)
+    if end_date:
+        qs = qs.filter(created_at__date__lte=end_date)
+
+    STATUS_PT = {
+        'ISSUED': 'Emitida',
+        'CANCELLED': 'Cancelada',
+        'DRAFT': 'Rascunho'
+    }
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="notas_{empresa.cnpj}.pdf"'
+
+    pdf = SimpleDocTemplate(response, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    story = []
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#1A202C'),
+        spaceAfter=6,
+        alignment=TA_CENTER
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#718096'),
+        spaceAfter=12,
+        alignment=TA_CENTER
+    )
+
+    story.append(Paragraph('Mei Monitor - Relatório de Notas Fiscais', title_style))
+    
+    # Formatar CNPJ ao tirar o relatorio pdf
+    cnpj = str(empresa.cnpj).replace('.', '').replace('/', '').replace('-', '')
+    if len(cnpj) == 14:
+        cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}"
+    else:
+        cnpj_formatado = empresa.cnpj
+    
+    story.append(Paragraph(f'{empresa.razao_social} - CNPJ: {cnpj_formatado}', subtitle_style))
+    
+    periodo = f'Período: {start_date.strftime("%d/%m/%Y") if start_date else "Início"} até {end_date.strftime("%d/%m/%Y") if end_date else "Hoje"}'
+    story.append(Paragraph(periodo, subtitle_style))
+    story.append(Spacer(1, 0.2*inch))
+
+    data = [['ID', 'Nome', 'Data', 'Status', 'Valor (R$)']]
+    
+    invoices = qs.order_by('-created_at')
+    total_geral = Decimal('0.00')
+    
+    for idx, inv in enumerate(invoices, 1):
+        data_formatada = inv.created_at.strftime('%d/%m/%Y %H:%M')
+        status_pt = STATUS_PT.get(inv.status, inv.status)
+        valor_formatado = f'{inv.total:.2f}'.replace('.', ',')
+        total_geral += inv.total
+        
+        data.append([str(idx), inv.invoice_id, data_formatada, status_pt, valor_formatado])
+
+    data.append(['', '', 'TOTAL:', f'{total_geral:.2f}'.replace('.', ',')])
+
+    table = Table(data, colWidths=[0.5*inch, 2.8*inch, 1.3*inch, 1.0*inch, 1.0*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563EB')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -2), colors.white),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#F3F4F6')),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, -1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E5E7EB')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#F9FAFB')]),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+
+    story.append(table)
+    story.append(Spacer(1, 0.3*inch))
+
+    # Resumo estatístico
+    status_counts = invoices.values('status').annotate(count=Count('id')).order_by('status')
+    
+    summary_data = [['Status', 'Quantidade']]
+    for sc in status_counts:
+        status_pt = STATUS_PT.get(sc['status'], sc['status'])
+        summary_data.append([status_pt, str(sc['count'])])
+
+    summary_table = Table(summary_data, colWidths=[3*inch, 1.5*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#16A34A')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E5E7EB')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+
+    story.append(Paragraph('Resumo por Status:', styles['Heading3']))
+    story.append(summary_table)
+
+    # Gerar PDF
+    pdf.build(story)
     return response
 
 

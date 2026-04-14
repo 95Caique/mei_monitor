@@ -31,7 +31,6 @@
     <div class="metric-card c-green">
         <div class="metric-header">
             <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
-<!--            <span class="metric-delta up">↑ 0%</span>-->
         </div>
         <div class="metric-value">{{ empresa.invoices.count }}</div>
         <div class="metric-label">Notas Emitidas</div>
@@ -59,12 +58,12 @@
             <div class="table-head">
                 <h3>Informações da Empresa</h3>
             </div>
-            <div style="padding: 20px;">
+            <div class="company-info-content" style="padding: 20px;">
                 <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
-                    <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -.4px; word-break: break-word;">
+                    <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -.4px; word-break: break-word; overflow-wrap: break-word;">
                         {{ empresa.razao_social }}
                     </h2>
-                    <p style="color: var(--text-muted); font-size: 13px; margin: 0; word-break: break-word;">CNPJ: {{ empresa.cnpj|format_cnpj }}</p>
+                    <p style="color: var(--text-muted); font-size: 13px; margin: 0; word-break: break-word; overflow-wrap: break-word;">CNPJ: {{ empresa.cnpj|format_cnpj }}</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -74,7 +73,7 @@
                     </div>
                     <div>
                         <div style="font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Última Verificação</div>
-                        <div style="font-size: 13px; color: var(--text); font-weight: 500;">{{ empresa.last_checked|date:"d/m/Y H:i" }}</div>
+                        <div style="font-size: 13px; color: var(--text); font-weight: 500; word-break: break-word;">{{ empresa.last_checked|date:"d/m/Y H:i" }}</div>
                     </div>
                 </div>
             </div>
@@ -97,21 +96,24 @@
                 <tbody>
                     {% for inv in empresa.invoices.all|dictsortreversed:"created_at"|slice:":5" %}
                     <tr>
-                        <td class="td-name">#{{ inv.invoice_id }}</td>
+                        <td class="td-name">{{ inv.invoice_id }}</td>
                         <td>{{ inv.created_at|date:"d/m/Y" }}</td>
                         <td class="td-valor">R$ {{ inv.total|currency_pt }}</td>
                         <td>
-                            {% if inv.status == 'ISSUED' %}
-                                <span class="badge badge-green">Emitida</span>
-                            {% elif inv.status == 'DRAFT' %}
-                                <span class="badge badge-yellow">Rascunho</span>
-                            {% elif inv.status == 'CANCELLED' %}
-                                <span class="badge badge-red">Cancelada</span>
-                            {% elif inv.status == 'Paga' %}
-                                <span class="badge badge-blue">Paga</span>
-                            {% else %}
-                                <span class="badge badge-gray">{{ inv.status }}</span>
-                            {% endif %}
+                            <span class="badge-desktop">
+                                {% if inv.status == 'ISSUED' %}
+                                    <span class="badge badge-green">Emitida</span>
+                                {% elif inv.status == 'DRAFT' %}
+                                    <span class="badge badge-yellow">Rascunho</span>
+                                {% elif inv.status == 'CANCELLED' %}
+                                    <span class="badge badge-red">Cancelada</span>
+                                {% elif inv.status == 'Paga' %}
+                                    <span class="badge badge-blue">Paga</span>
+                                {% else %}
+                                    <span class="badge badge-gray">{{ inv.status }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="status-dot {% if inv.status == 'ISSUED' %}issued{% elif inv.status == 'CANCELLED' %}cancelled{% elif inv.status == 'DRAFT' %}draft{% elif inv.status == 'Paga' %}paid{% endif %}" title="{% if inv.status == 'ISSUED' %}Emitida{% elif inv.status == 'CANCELLED' %}Cancelada{% elif inv.status == 'DRAFT' %}Rascunho{% elif inv.status == 'Paga' %}Paga{% endif %}"></span>
                         </td>
                     </tr>
                     {% endfor %}

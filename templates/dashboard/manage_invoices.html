@@ -95,9 +95,9 @@
             <tr>
                 <th>ID</th>
                 <th>Valor</th>
-                <th>Data</th>
+                <th class="hide-on-mobile">Data</th>
                 <th>Status</th>
-                <th>Atualização</th>
+                <th class="hide-on-mobile">Modificado em</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -106,21 +106,24 @@
             <tr>
                 <td class="td-name">#{{ invoice.invoice_id }}</td>
                 <td class="td-valor">R$ {{ invoice.total|currency_pt }}</td>
-                <td>{{ invoice.created_at|date:"d/m/Y" }}</td>
+                <td class="hide-on-mobile">{{ invoice.created_at|date:"d/m/Y" }}</td>
                 <td>
-                    {% if invoice.status == 'ISSUED' %}
-                        <span class="badge badge-green">Emitida</span>
-                    {% elif invoice.status == 'CANCELLED' %}
-                        <span class="badge badge-red">Cancelada</span>
-                    {% elif invoice.status == 'DRAFT' %}
-                        <span class="badge badge-yellow">Rascunho</span>
-                    {% elif invoice.status == 'Paga' %}
-                        <span class="badge badge-blue">Paga</span>
-                    {% else %}
-                        <span class="badge badge-gray">{{ invoice.status }}</span>
-                    {% endif %}
+                    <span class="badge-desktop">
+                        {% if invoice.status == 'ISSUED' %}
+                            <span class="badge badge-green">Emitida</span>
+                        {% elif invoice.status == 'CANCELLED' %}
+                            <span class="badge badge-red">Cancelada</span>
+                        {% elif invoice.status == 'DRAFT' %}
+                            <span class="badge badge-yellow">Rascunho</span>
+                        {% elif invoice.status == 'Paga' %}
+                            <span class="badge badge-blue">Paga</span>
+                        {% else %}
+                            <span class="badge badge-gray">{{ invoice.status }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="status-dot {% if invoice.status == 'ISSUED' %}issued{% elif invoice.status == 'CANCELLED' %}cancelled{% elif invoice.status == 'DRAFT' %}draft{% elif invoice.status == 'Paga' %}paid{% endif %}" title="{% if invoice.status == 'ISSUED' %}Emitida{% elif invoice.status == 'CANCELLED' %}Cancelada{% elif invoice.status == 'DRAFT' %}Rascunho{% elif invoice.status == 'Paga' %}Paga{% endif %}"></span>
                 </td>
-                <td style="font-size: 12px; color: var(--text-muted);">{{ invoice.updated_at|date:"d/m/Y H:i" }}</td>
+                <td class="hide-on-mobile" style="font-size: 12px; color: var(--text-muted);">{{ invoice.updated_at|date:"d/m/Y H:i" }}</td>
                 <td>
                     <a href="{% url 'edit_invoice' invoice.id %}" class="action-btn">Editar</a>
                     {% if invoice.status != 'CANCELLED' %}
